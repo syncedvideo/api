@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/go-chi/chi"
 	"github.com/google/uuid"
@@ -72,11 +73,34 @@ func roomWebSocketHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// create user
-	user := roomPackage.NewUser()
+	// Check userID cookie
+	userIDCookie, err := r.Cookie("userID")
+	var userIDCookieUUID uuid.UUID
+	if err == nil {
+		log.Println("cookie:", userIDCookie.Value)
+		userIDCookieUUID, _ = uuid.Parse(userIDCookie.Value)
+	}
 
-	// upgrade http connection to websocket connection
-	wsConn, err := upgrader.Upgrade(w, r, nil)
+	user := room.FindUser(userIDCookieUUID)
+	if user == nil {
+		// create user
+		user = roomPackage.NewUser()
+	}
+
+	// Create userID cookie header
+	userIDCookie = &http.Cookie{
+		Name:     "userID",
+		Value:    user.ID.String(),
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   false,
+		Expires:  time.Now().Add(24 * time.Hour * 360),
+	}
+	header := make(http.Header)
+	header["Set-Cookie"] = []string{userIDCookie.String()}
+
+	// upgrade http connection to websocket connection with userID cookie
+	wsConn, err := upgrader.Upgrade(w, r, header)
 	if err != nil {
 		log.Print("upgrader.Upgrade error:", err)
 		return
@@ -92,7 +116,7 @@ func roomWebSocketHandler(w http.ResponseWriter, r *http.Request) {
 
 	// handle disconnect
 	defer func() {
-		room.ConnectionHub.Disconnect(user)
+		room.ConnectionHub.Disconnect(user, wsConn)
 		wsConn.Close()
 		room.Sync()
 	}()

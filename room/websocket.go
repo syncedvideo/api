@@ -54,7 +54,7 @@ func (hub *ConnectionHub) Connect(user *User, wsConn *websocket.Conn) (*Connecti
 }
 
 // Disconnect a user
-func (hub *ConnectionHub) Disconnect(user *User) {
+func (hub *ConnectionHub) Disconnect(user *User, wsConn *websocket.Conn) {
 	connection, exists := hub.Connections[user.ID]
 	if !exists {
 		return
@@ -64,6 +64,14 @@ func (hub *ConnectionHub) Disconnect(user *User) {
 	if len(connection.WsConnections) == 1 {
 		delete(hub.Connections, user.ID)
 		log.Printf("User %v disconnected\n", user.ID)
+		return
+	}
+
+	// Remove WebSocket connection
+	for i, v := range connection.WsConnections {
+		if v == wsConn {
+			connection.WsConnections = append(connection.WsConnections[:i], connection.WsConnections[i+1:]...)
+		}
 	}
 }
 

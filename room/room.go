@@ -30,3 +30,10 @@ func (r *Room) Sync() {
 		Data: r,
 	})
 }
+func (r *Room) FindUser(id uuid.UUID) *User {
+	connection, exists := r.ConnectionHub.Connections[id]
+	if !exists {
+		return nil
+	}
+	return connection.User
+}
