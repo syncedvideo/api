@@ -12,7 +12,6 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/joho/godotenv"
 	roomPackage "github.com/syncedvideo/backend/room"
-	"github.com/syncedvideo/backend/youtube"
 )
 
 var addr = flag.String("addr", "localhost:3000", "http service address")
@@ -122,8 +121,7 @@ func searchYouTubeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	yt := youtube.New(os.Getenv("YOUTUBE_API_KEY"))
-	result, err := yt.VideoSearch(query)
+	videoSearch, err := roomPackage.NewVideoSearch(os.Getenv("YOUTUBE_API_KEY")).Do(query)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Println("youTubeSearchHandler error:", err)
@@ -132,5 +130,5 @@ func searchYouTubeHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(result)
+	json.NewEncoder(w).Encode(&videoSearch)
 }

@@ -3,8 +3,6 @@ package room
 import (
 	"log"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 // VideoPlayer represents the room's video player
@@ -36,7 +34,7 @@ type VideoQueue struct {
 }
 
 // Find video in queue
-func (queue *VideoQueue) Find(id uuid.UUID) *Video {
+func (queue *VideoQueue) Find(id string) *Video {
 	for _, video := range queue.Videos {
 		if video.ID == id {
 			return video
@@ -46,7 +44,7 @@ func (queue *VideoQueue) Find(id uuid.UUID) *Video {
 }
 
 // IsQueued checks if video is queued
-func (queue *VideoQueue) IsQueued(id uuid.UUID) bool {
+func (queue *VideoQueue) IsQueued(id string) bool {
 	return queue.Find(id) == nil
 }
 
@@ -61,7 +59,7 @@ func (queue *VideoQueue) Add(user *User, video *Video) {
 }
 
 // Remove video from queue
-func (queue *VideoQueue) Remove(id uuid.UUID) {
+func (queue *VideoQueue) Remove(id string) {
 	if queue.IsQueued(id) {
 		for i, video := range queue.Videos {
 			if video.ID == id {

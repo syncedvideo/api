@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"time"
 
-	iso8601 "github.com/senseyeio/duration"
 	"google.golang.org/api/googleapi/transport"
 	youtube "google.golang.org/api/youtube/v3"
 )
@@ -24,33 +23,23 @@ func New(apiKey string) *YouTube {
 	return &YouTube{Service: service}
 }
 
-type VideoSearchResults struct {
-	Query string               `json:"query"`
-	Items []*VideoSearchResult `json:"items"`
+type videoSearchResults struct {
+	query  string
+	videos []*youTubeVideo
 }
 
-func (results *VideoSearchResults) getItemIds() []string {
-	ids := []string{}
-	for _, result := range results.Items {
-		ids = append(ids, result.ID)
-	}
-	return ids
+type youTubeVideo struct {
+	ID             string
+	Query          string
+	Snippet        *youtube.SearchResultSnippet
+	ContentDetails *youtube.VideoContentDetails
+	Statistics     *youtube.VideoStatistics
 }
 
-type VideoSearchResult struct {
-	ID           string `json:"id"`
-	Title        string `json:"title"`
-	Description  string `json:"description"`
-	Duration     int    `json:"duration"`
-	Thumbnail    string `json:"thumbnail"`
-	ViewCount    uint64 `json:"viewCount"`
-	LikeCount    uint64 `json:"likeCount"`
-	DislikeCount uint64 `json:"dislikeCount"`
-}
+// SearchVideos searches for videos
+func (yt YouTube) SearchVideos(query string) ([]*youTubeVideo, error) {
 
-// VideoSearch searches for videos
-func (yt YouTube) VideoSearch(query string) (*VideoSearchResults, error) {
-
+	videos := []*youTubeVideo{}
 	const maxResults = 10
 
 	// get video ids and snippet
@@ -62,39 +51,44 @@ func (yt YouTube) VideoSearch(query string) (*VideoSearchResults, error) {
 		return nil, err
 	}
 
-	results := &VideoSearchResults{
-		Query: query,
-		Items: []*VideoSearchResult{},
-	}
 	for _, item := range searchListResponse.Items {
 		if item.Id.VideoId != "" {
-			results.Items = append(results.Items, &VideoSearchResult{
-				ID: item.Id.VideoId,
+			videos = append(videos, &youTubeVideo{
+				ID:      item.Id.VideoId,
+				Snippet: item.Snippet,
 			})
 		}
 	}
 
+	// get video ids
+	videoIDs := []string{}
+	for _, video := range videos {
+		videoIDs = append(videoIDs, video.ID)
+	}
+
 	// add content details to results
-	videosListRequest := yt.Service.Videos.List([]string{"snippet", "contentDetails", "statistics"}).Id(results.getItemIds()...)
+	videosListRequest := yt.Service.Videos.List([]string{"snippet", "contentDetails", "statistics"}).Id(videoIDs...)
 	videosListResponse, err := videosListRequest.Do()
 	if err != nil {
 		return nil, err
 	}
 
 	for _, videoListItem := range videosListResponse.Items {
-		for _, result := range results.Items {
-			if videoListItem.Id == result.ID {
-				duration, _ := iso8601.ParseISO8601(videoListItem.ContentDetails.Duration)
-				result.Title = videoListItem.Snippet.Title
-				result.Description = videoListItem.Snippet.Description
-				result.Thumbnail = videoListItem.Snippet.Thumbnails.Default.Url
-				result.Duration = (duration.TM * 60) + duration.TS
-				result.ViewCount = videoListItem.Statistics.ViewCount
-				result.LikeCount = videoListItem.Statistics.LikeCount
-				result.DislikeCount = videoListItem.Statistics.DislikeCount
+		for _, video := range videos {
+			if videoListItem.Id == video.ID {
+				video.ContentDetails = videoListItem.ContentDetails
+				video.Statistics = videoListItem.Statistics
+				// duration, _ := iso8601.ParseISO8601(videoListItem.ContentDetails.Duration)
+				// result.Title = videoListItem.Snippet.Title
+				// result.Description = videoListItem.Snippet.Description
+				// result.Thumbnail = videoListItem.Snippet.Thumbnails.Default.Url
+				// result.Duration = (duration.TM * 60) + duration.TS
+				// result.ViewCount = videoListItem.Statistics.ViewCount
+				// result.LikeCount = videoListItem.Statistics.LikeCount
+				// result.DislikeCount = videoListItem.Statistics.DislikeCount
 			}
 		}
 	}
 
-	return results, nil
+	return videos, nil
 }
