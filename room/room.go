@@ -10,14 +10,13 @@ type Room struct {
 	Users         map[uuid.UUID]*User `json:"users"`
 	VideoPlayer   *VideoPlayer        `json:"videoPlayer"`
 	Chat          *Chat               `json:"chat"`
-	ConnectionHub *ConnectionHub      `json:"-"`
+	ConnectionHub *ConnectionHub      `json:"connectionHub"`
 }
 
 // NewRoom returns a new room
 func NewRoom(connectionCap int) *Room {
 	return &Room{
 		ID:            uuid.New(),
-		Users:         make(map[uuid.UUID]*User),
 		VideoPlayer:   NewVideoPlayer(),
 		Chat:          NewChat(),
 		ConnectionHub: NewConnectionHub(connectionCap),

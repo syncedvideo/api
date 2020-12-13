@@ -12,14 +12,14 @@ import (
 
 // ConnectionHub manages websocket connections
 type ConnectionHub struct {
-	Connections   map[uuid.UUID]*Connection
-	ConnectionCap int
+	Connections   map[uuid.UUID]*Connection `json:"connection"`
+	ConnectionCap int                       `json:"connectionHub"`
 }
 
 // Connection represents a connected user
 type Connection struct {
-	User          *User
-	WsConnections []*websocket.Conn
+	User          *User             `json:"user"`
+	WsConnections []*websocket.Conn `json:"-"`
 }
 
 // NewConnectionHub returns a new ConnectionHub
