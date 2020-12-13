@@ -78,14 +78,6 @@ func (yt YouTube) SearchVideos(query string) ([]*youTubeVideo, error) {
 			if videoListItem.Id == video.ID {
 				video.ContentDetails = videoListItem.ContentDetails
 				video.Statistics = videoListItem.Statistics
-				// duration, _ := iso8601.ParseISO8601(videoListItem.ContentDetails.Duration)
-				// result.Title = videoListItem.Snippet.Title
-				// result.Description = videoListItem.Snippet.Description
-				// result.Thumbnail = videoListItem.Snippet.Thumbnails.Default.Url
-				// result.Duration = (duration.TM * 60) + duration.TS
-				// result.ViewCount = videoListItem.Statistics.ViewCount
-				// result.LikeCount = videoListItem.Statistics.LikeCount
-				// result.DislikeCount = videoListItem.Statistics.DislikeCount
 			}
 		}
 	}
