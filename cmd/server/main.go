@@ -36,9 +36,11 @@ func enableCors(w *http.ResponseWriter) {
 
 var rooms = make(map[uuid.UUID]*roomPackage.Room)
 
+const connectionCap = 10
+
 func postRoomHandler(w http.ResponseWriter, r *http.Request) {
 	enableCors(&w)
-	newRoom := roomPackage.NewRoom()
+	newRoom := roomPackage.NewRoom(connectionCap)
 	rooms[newRoom.ID] = newRoom
 	log.Println("Created new room", newRoom.ID)
 	w.Header().Set("Content-Type", "application/json")
@@ -81,7 +83,11 @@ func roomWebSocketHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// connect user to room
-	room.ConnectionHub.Connect(user, wsConn)
+	_, err = room.ConnectionHub.Connect(user, wsConn)
+	if err != nil {
+		log.Println(err)
+		return
+	}
 	room.Sync()
 
 	// handle disconnect

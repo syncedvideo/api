@@ -3,6 +3,7 @@ package room
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"log"
 
 	"github.com/google/uuid"
@@ -11,7 +12,8 @@ import (
 
 // ConnectionHub manages websocket connections
 type ConnectionHub struct {
-	Connections map[uuid.UUID]*Connection
+	Connections   map[uuid.UUID]*Connection
+	ConnectionCap int
 }
 
 // Connection represents a connected user
@@ -21,25 +23,33 @@ type Connection struct {
 }
 
 // NewConnectionHub returns a new ConnectionHub
-func NewConnectionHub() *ConnectionHub {
+func NewConnectionHub(connectionCap int) *ConnectionHub {
 	return &ConnectionHub{
-		Connections: make(map[uuid.UUID]*Connection),
+		Connections:   make(map[uuid.UUID]*Connection),
+		ConnectionCap: connectionCap,
 	}
 }
 
+// ErrConnectionCapReached handle connection cap error
+var ErrConnectionCapReached = errors.New("Reached connection cap")
+
 // Connect a user
-func (hub *ConnectionHub) Connect(user *User, wsConn *websocket.Conn) *Connection {
+func (hub *ConnectionHub) Connect(user *User, wsConn *websocket.Conn) (*Connection, error) {
+	if hub.ConnectionCap == len(hub.Connections) {
+		return nil, ErrConnectionCapReached
+	}
+
 	connection, exists := hub.Connections[user.ID]
 	if exists {
 		connection.WsConnections = append(hub.Connections[user.ID].WsConnections, wsConn)
 		log.Println("Connected user %w to ConnectionHub", user.ID)
-		return connection
+		return connection, nil
 	}
 	hub.Connections[user.ID] = &Connection{
 		User:          user,
 		WsConnections: []*websocket.Conn{wsConn},
 	}
-	return hub.Connections[user.ID]
+	return hub.Connections[user.ID], nil
 }
 
 // Disconnect a user

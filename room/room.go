@@ -14,13 +14,13 @@ type Room struct {
 }
 
 // NewRoom returns a new room
-func NewRoom() *Room {
+func NewRoom(connectionCap int) *Room {
 	return &Room{
 		ID:            uuid.New(),
 		Users:         make(map[uuid.UUID]*User),
 		VideoPlayer:   NewVideoPlayer(),
 		Chat:          NewChat(),
-		ConnectionHub: NewConnectionHub(),
+		ConnectionHub: NewConnectionHub(connectionCap),
 	}
 }
 
