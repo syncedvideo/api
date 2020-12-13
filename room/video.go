@@ -79,6 +79,7 @@ func (search *VideoSearch) Do(query string) (*VideoSearch, error) {
 				LikeCount:    ytVideo.Statistics.LikeCount,
 				DislikeCount: ytVideo.Statistics.DislikeCount,
 			},
+			Votes: make(map[uuid.UUID]*User),
 		})
 	}
 
