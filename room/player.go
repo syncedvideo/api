@@ -45,7 +45,7 @@ func (queue *VideoQueue) Find(id string) *Video {
 
 // IsQueued checks if video is queued
 func (queue *VideoQueue) IsQueued(id string) bool {
-	return queue.Find(id) == nil
+	return queue.Find(id) != nil
 }
 
 // Add video to queue

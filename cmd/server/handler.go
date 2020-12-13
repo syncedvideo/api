@@ -110,7 +110,12 @@ func (handler *WsActionHandler) handleQueueAdd() {
 		log.Println("handleQueueAdd error:", err)
 		return
 	}
-	handler.Room.VideoPlayer.Play(video)
+	log.Println("handleQueueAdd:", video)
+	if handler.Room.VideoPlayer.CurrentVideo == nil {
+		handler.Room.VideoPlayer.Play(video)
+		return
+	}
+	handler.Room.VideoPlayer.Queue.Add(handler.User, video)
 }
 
 func (handler *WsActionHandler) handleQueueRemove() {
