@@ -32,14 +32,24 @@ type videoStatistics struct {
 	DislikeCount uint64 `json:"dislikeCount"`
 }
 
+// AddVote to video
+func (v *Video) AddVote(user *User) {
+	v.Votes[user.ID] = user
+}
+
+// RemoveVote from video
+func (v *Video) RemoveVote(user *User) {
+	delete(v.Votes, user.ID)
+}
+
 // ToggleVote of video
 func (v *Video) ToggleVote(user *User) {
 	_, voted := v.Votes[user.ID]
 	if voted {
-		delete(v.Votes, user.ID)
+		v.RemoveVote(user)
 		return
 	}
-	v.Votes[user.ID] = user
+	v.AddVote(user)
 }
 
 // VideoSearch handles the YouTube video search

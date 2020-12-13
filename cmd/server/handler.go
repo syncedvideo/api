@@ -115,6 +115,7 @@ func (handler *WsActionHandler) handleQueueAdd() {
 		handler.Room.VideoPlayer.Play(video)
 		return
 	}
+	video.AddVote(handler.User)
 	handler.Room.VideoPlayer.Queue.Add(handler.User, video)
 }
 
