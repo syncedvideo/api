@@ -94,6 +94,7 @@ func roomWebSocketHandler(w http.ResponseWriter, r *http.Request) {
 	defer func() {
 		room.ConnectionHub.Disconnect(user)
 		wsConn.Close()
+		room.Sync()
 	}()
 
 	// handle incoming messages

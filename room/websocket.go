@@ -42,13 +42,14 @@ func (hub *ConnectionHub) Connect(user *User, wsConn *websocket.Conn) (*Connecti
 	connection, exists := hub.Connections[user.ID]
 	if exists {
 		connection.WsConnections = append(hub.Connections[user.ID].WsConnections, wsConn)
-		log.Println("Connected user %w to ConnectionHub", user.ID)
-		return connection, nil
+	} else {
+		hub.Connections[user.ID] = &Connection{
+			User:          user,
+			WsConnections: []*websocket.Conn{wsConn},
+		}
 	}
-	hub.Connections[user.ID] = &Connection{
-		User:          user,
-		WsConnections: []*websocket.Conn{wsConn},
-	}
+
+	log.Printf("User %v connected\n", user.ID)
 	return hub.Connections[user.ID], nil
 }
 
@@ -60,9 +61,9 @@ func (hub *ConnectionHub) Disconnect(user *User) {
 	}
 
 	// Remove connection from hub if all connections are closed
-	if len(connection.WsConnections) == 0 {
+	if len(connection.WsConnections) == 1 {
 		delete(hub.Connections, user.ID)
-		log.Println("Disconnected user %w from ConnectionHub", user.ID)
+		log.Printf("User %v disconnected\n", user.ID)
 	}
 }
 
