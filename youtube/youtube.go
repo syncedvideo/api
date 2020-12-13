@@ -51,6 +51,10 @@ func (yt YouTube) SearchVideos(query string) ([]*youTubeVideo, error) {
 		return nil, err
 	}
 
+	if len(searchListResponse.Items) == 0 {
+		return videos, nil
+	}
+
 	for _, item := range searchListResponse.Items {
 		if item.Id.VideoId != "" {
 			videos = append(videos, &youTubeVideo{
@@ -67,7 +71,7 @@ func (yt YouTube) SearchVideos(query string) ([]*youTubeVideo, error) {
 	}
 
 	// add content details to results
-	videosListRequest := yt.Service.Videos.List([]string{"snippet", "contentDetails", "statistics"}).Id(videoIDs...)
+	videosListRequest := yt.Service.Videos.List([]string{"id", "snippet", "contentDetails", "statistics"}).Id(videoIDs...)
 	videosListResponse, err := videosListRequest.Do()
 	if err != nil {
 		return nil, err
