@@ -12,7 +12,7 @@ import (
 
 // ConnectionHub manages websocket connections
 type ConnectionHub struct {
-	Connections   map[uuid.UUID]*Connection `json:"connection"`
+	Connections   map[uuid.UUID]*Connection `json:"connections"`
 	ConnectionCap int                       `json:"connectionHub"`
 }
 
