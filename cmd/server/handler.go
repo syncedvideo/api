@@ -62,7 +62,7 @@ func (handler *WsActionHandler) handleUserSetUsername() {
 	username := ""
 	err := json.Unmarshal(handler.WsAction.Data, &username)
 	if err != nil {
-		log.Println("ClientSetUsername error:", err)
+		log.Println("handleUserSetUsername error:", err)
 		return
 	}
 	handler.User.SetUsername(username)
@@ -72,7 +72,7 @@ func (handler *WsActionHandler) handleUserSetColor() {
 	color := ""
 	err := json.Unmarshal(handler.WsAction.Data, &color)
 	if err != nil {
-		log.Println("ClientSetUsername error:", err)
+		log.Println("handleUserSetColor error:", err)
 		return
 	}
 	handler.User.SetChatColor(color)

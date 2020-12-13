@@ -4,7 +4,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// Room handles state and connected clients
+// Room handles state and connected users
 type Room struct {
 	ID            uuid.UUID           `json:"id"`
 	Users         map[uuid.UUID]*User `json:"users"`
