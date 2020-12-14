@@ -20,6 +20,12 @@ func NewUser() *User {
 	}
 }
 
+// SetBuffering user prop
+func (u *User) SetBuffering(buffering bool) *User {
+	u.Buffering = buffering
+	return u
+}
+
 // SetUsername of user
 func (u *User) SetUsername(name string) *User {
 	u.Username = name

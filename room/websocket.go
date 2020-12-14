@@ -123,8 +123,9 @@ type WsActionName string
 // WebSocket actions
 const (
 	// User actions
-	WsActionUserSetUsername = WsActionName("user:set:username")
-	WsActionUserSetColor    = WsActionName("user:set:color")
+	WsActionUserSetUsername  = WsActionName("user:set:username")
+	WsActionUserSetColor     = WsActionName("user:set:color")
+	WsActionUserSetBuffering = WsActionName("user:set:buffering")
 
 	// Player actions
 	WsActionPlayerPlay  = WsActionName("player:play")

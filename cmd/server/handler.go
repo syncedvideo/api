@@ -29,6 +29,8 @@ func (handler *WsActionHandler) Handle() {
 	switch handler.WsAction.Name {
 
 	// User actions
+	case room.WsActionUserSetBuffering:
+		handler.handleUserSetBuffering()
 	case room.WsActionUserSetUsername:
 		handler.handleUserSetUsername()
 	case room.WsActionUserSetColor:
@@ -57,6 +59,16 @@ func (handler *WsActionHandler) Handle() {
 
 	// Sync room state after handling the action
 	handler.Room.Sync()
+}
+
+func (handler *WsActionHandler) handleUserSetBuffering() {
+	var buffering bool
+	err := json.Unmarshal(handler.WsAction.Data, &buffering)
+	if err != nil {
+		log.Println("handleUserSetBuffering error:", err)
+		return
+	}
+	handler.User.SetBuffering(buffering)
 }
 
 func (handler *WsActionHandler) handleUserSetUsername() {
