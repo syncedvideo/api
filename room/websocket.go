@@ -127,9 +127,9 @@ const (
 	WsActionUserSetColor    = WsActionName("user:set:color")
 
 	// Player actions
-	WsActionPlayerInit          = WsActionName("player:init")
-	WsActionPlayerTogglePlaying = WsActionName("player:togglePlaying")
-	WsActionPlayerSkip          = WsActionName("player:skip")
+	WsActionPlayerPlay  = WsActionName("player:play")
+	WsActionPlayerPause = WsActionName("player:pause")
+	WsActionPlayerSkip  = WsActionName("player:skip")
 
 	// Queue actions
 	WsActionQueueAdd    = WsActionName("queue:add")

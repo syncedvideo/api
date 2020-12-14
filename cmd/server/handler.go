@@ -34,13 +34,13 @@ func (handler *WsActionHandler) Handle() {
 	case room.WsActionUserSetColor:
 		handler.handleUserSetColor()
 
-	// Player actions
-	case room.WsActionPlayerInit:
-		handler.handlePlayerInit()
+		// Player actions
+	case room.WsActionPlayerPlay:
+		handler.handlePlayerPlay()
+	case room.WsActionPlayerPause:
+		handler.handlePlayerPause()
 	case room.WsActionPlayerSkip:
 		handler.handlePlayerSkip()
-	case room.WsActionPlayerTogglePlaying:
-		handler.handlePlayerTogglePlaying()
 
 	// Queue actions
 	case room.WsActionQueueAdd:
@@ -79,8 +79,20 @@ func (handler *WsActionHandler) handleUserSetColor() {
 	handler.User.SetChatColor(color)
 }
 
-func (handler *WsActionHandler) handlePlayerInit() {
-	log.Println("TODO handlePlayerInit")
+func (handler *WsActionHandler) handlePlayerPlay() {
+	if handler.Room.VideoPlayer.CurrentVideo == nil {
+		log.Println("handlePlayerTogglePlaying: CurrentVideo is nil")
+		return
+	}
+	handler.Room.VideoPlayer.Playing = true
+}
+
+func (handler *WsActionHandler) handlePlayerPause() {
+	if handler.Room.VideoPlayer.CurrentVideo == nil {
+		log.Println("handlePlayerTogglePlaying: CurrentVideo is nil")
+		return
+	}
+	handler.Room.VideoPlayer.Playing = false
 }
 
 func (handler *WsActionHandler) handlePlayerSkip() {
@@ -94,14 +106,6 @@ func (handler *WsActionHandler) handlePlayerSkip() {
 		return
 	}
 	log.Println("handlePlayerSkip: Queue is empty")
-}
-
-func (handler *WsActionHandler) handlePlayerTogglePlaying() {
-	if handler.Room.VideoPlayer.CurrentVideo == nil {
-		log.Println("handlePlayerTogglePlaying: CurrentVideo is nil")
-		return
-	}
-	handler.Room.VideoPlayer.Playing = !handler.Room.VideoPlayer.Playing
 }
 
 func (handler *WsActionHandler) handleQueueAdd() {
