@@ -15,7 +15,8 @@ const YouTubeProvider = Provider("youtube")
 // Video represents a video that can be
 // played by a VideoPlayer or added to a VideoQueue
 type Video struct {
-	ID          string              `json:"id"`
+	ID          uuid.UUID           `json:"id"`
+	ProviderID  string              `json:"providerId"`
 	Provider    Provider            `json:"provider"`
 	Title       string              `json:"title"`
 	Description string              `json:"description"`
@@ -79,6 +80,7 @@ func (search *VideoSearch) Do(query string) (*VideoSearch, error) {
 		duration, _ := iso8601.ParseISO8601(ytVideo.ContentDetails.Duration)
 		videos = append(videos, &Video{
 			ID:          ytVideo.ID,
+			ProviderID:  ytVideo.YouTubeID,
 			Provider:    YouTubeProvider,
 			Title:       ytVideo.Snippet.Title,
 			Description: ytVideo.Snippet.Description,

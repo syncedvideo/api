@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/google/uuid"
 	"google.golang.org/api/googleapi/transport"
 	youtube "google.golang.org/api/youtube/v3"
 )
@@ -25,11 +26,12 @@ func New(apiKey string) *YouTube {
 
 type videoSearchResults struct {
 	query  string
-	videos []*youTubeVideo
+	videos []*YouTubeVideo
 }
 
-type youTubeVideo struct {
-	ID             string
+type YouTubeVideo struct {
+	ID             uuid.UUID
+	YouTubeID      string
 	Query          string
 	Snippet        *youtube.SearchResultSnippet
 	ContentDetails *youtube.VideoContentDetails
@@ -37,9 +39,9 @@ type youTubeVideo struct {
 }
 
 // SearchVideos searches for videos
-func (yt YouTube) SearchVideos(query string) ([]*youTubeVideo, error) {
+func (yt YouTube) SearchVideos(query string) ([]*YouTubeVideo, error) {
 
-	videos := []*youTubeVideo{}
+	videos := []*YouTubeVideo{}
 	const maxResults = 10
 
 	// get video ids and snippet
@@ -57,9 +59,10 @@ func (yt YouTube) SearchVideos(query string) ([]*youTubeVideo, error) {
 
 	for _, item := range searchListResponse.Items {
 		if item.Id.VideoId != "" {
-			videos = append(videos, &youTubeVideo{
-				ID:      item.Id.VideoId,
-				Snippet: item.Snippet,
+			videos = append(videos, &YouTubeVideo{
+				ID:        uuid.New(),
+				YouTubeID: item.Id.VideoId,
+				Snippet:   item.Snippet,
 			})
 		}
 	}
@@ -67,7 +70,7 @@ func (yt YouTube) SearchVideos(query string) ([]*youTubeVideo, error) {
 	// get video ids
 	videoIDs := []string{}
 	for _, video := range videos {
-		videoIDs = append(videoIDs, video.ID)
+		videoIDs = append(videoIDs, video.YouTubeID)
 	}
 
 	// add content details to results
@@ -79,7 +82,7 @@ func (yt YouTube) SearchVideos(query string) ([]*youTubeVideo, error) {
 
 	for _, videoListItem := range videosListResponse.Items {
 		for _, video := range videos {
-			if videoListItem.Id == video.ID {
+			if videoListItem.Id == video.YouTubeID {
 				video.ContentDetails = videoListItem.ContentDetails
 				video.Statistics = videoListItem.Statistics
 			}

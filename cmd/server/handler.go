@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 
+	"github.com/google/uuid"
 	"github.com/syncedvideo/backend/room"
 )
 
@@ -89,7 +90,7 @@ func (handler *WsActionHandler) handlePlayerSkip() {
 		// Remove current video from queue
 		handler.Room.VideoPlayer.Queue.Remove(handler.Room.VideoPlayer.CurrentVideo.ID)
 
-		log.Panicln("handlePlayerSkip: Video skipped by user:", handler.User)
+		log.Println("handlePlayerSkip: Video skipped by user:", handler.User)
 		return
 	}
 	log.Println("handlePlayerSkip: Queue is empty")
@@ -120,26 +121,37 @@ func (handler *WsActionHandler) handleQueueAdd() {
 }
 
 func (handler *WsActionHandler) handleQueueRemove() {
-	videoID := ""
-	err := json.Unmarshal(handler.WsAction.Data, &videoID)
+	idString := ""
+	err := json.Unmarshal(handler.WsAction.Data, &idString)
 	if err != nil {
 		log.Println("handleQueueRemove error:", err)
 		return
 	}
-	handler.Room.VideoPlayer.Queue.Remove(videoID)
+	id, err := uuid.Parse(idString)
+	if err != nil {
+		log.Println("handleQueueRemove error:", err)
+		return
+	}
+	handler.Room.VideoPlayer.Queue.Remove(id)
 }
 
 func (handler *WsActionHandler) handleQueueVote() {
-	videoID := ""
-	err := json.Unmarshal(handler.WsAction.Data, &videoID)
+	idString := ""
+	err := json.Unmarshal(handler.WsAction.Data, &idString)
 	if err != nil {
 		log.Println("handleQueueVote error:", err)
 		return
 	}
 
-	video := handler.Room.VideoPlayer.Queue.Find(videoID)
+	id, err := uuid.Parse(idString)
+	if err != nil {
+		log.Println("handleQueueVote error:", err)
+		return
+	}
+
+	video := handler.Room.VideoPlayer.Queue.Find(id)
 	if video == nil {
-		log.Println("handleQueueVote: Video %w not found", videoID)
+		log.Println("handleQueueVote: Video %w not found", id)
 		return
 	}
 
