@@ -8,6 +8,7 @@ type User struct {
 	ID        uuid.UUID `json:"id"`
 	Username  string    `json:"username"`
 	ChatColor string    `json:"chatColor"`
+	Buffering bool      `json:"buffering"`
 }
 
 // NewUser returns a new user
