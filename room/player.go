@@ -10,7 +10,7 @@ import (
 // Player represents the room's video player
 type Player struct {
 	Video   *Video        `json:"video"`
-	Time    time.Duration `json:"currentTime"`
+	Time    time.Duration `json:"time"`
 	Playing bool          `json:"playing"`
 	Queue   *VideoQueue   `json:"queue"`
 }
