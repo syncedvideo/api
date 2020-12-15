@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"log"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/syncedvideo/backend/room"
@@ -43,6 +44,8 @@ func (handler *WsActionHandler) Handle() {
 		handler.handlePlayerPause()
 	case room.WsActionPlayerSkip:
 		handler.handlePlayerSkip()
+	case room.WsActionPlayerSeek:
+		handler.handlePlayerSeek()
 
 	// Queue actions
 	case room.WsActionQueueAdd:
@@ -118,6 +121,16 @@ func (handler *WsActionHandler) handlePlayerSkip() {
 		return
 	}
 	log.Println("handlePlayerSkip: Queue is empty")
+}
+
+func (handler *WsActionHandler) handlePlayerSeek() {
+	var t time.Duration
+	err := json.Unmarshal(handler.WsAction.Data, &t)
+	if err != nil {
+		log.Println("e error:", err)
+		return
+	}
+	handler.Room.Player.Time = t
 }
 
 func (handler *WsActionHandler) handleQueueAdd() {

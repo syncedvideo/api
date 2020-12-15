@@ -131,6 +131,7 @@ const (
 	WsActionPlayerPlay  = WsActionName("player:play")
 	WsActionPlayerPause = WsActionName("player:pause")
 	WsActionPlayerSkip  = WsActionName("player:skip")
+	WsActionPlayerSeek  = WsActionName("player:seek")
 
 	// Queue actions
 	WsActionQueueAdd    = WsActionName("queue:add")
