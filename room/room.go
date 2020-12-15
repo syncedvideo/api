@@ -8,7 +8,7 @@ import (
 type Room struct {
 	ID            uuid.UUID           `json:"id"`
 	Users         map[uuid.UUID]*User `json:"users"`
-	VideoPlayer   *VideoPlayer        `json:"videoPlayer"`
+	Player        *Player             `json:"player"`
 	Chat          *Chat               `json:"chat"`
 	ConnectionHub *ConnectionHub      `json:"connectionHub"`
 }
@@ -17,7 +17,7 @@ type Room struct {
 func NewRoom(connectionCap int) *Room {
 	return &Room{
 		ID:            uuid.New(),
-		VideoPlayer:   NewVideoPlayer(),
+		Player:        NewVideoPlayer(),
 		Chat:          NewChat(),
 		ConnectionHub: NewConnectionHub(connectionCap),
 	}

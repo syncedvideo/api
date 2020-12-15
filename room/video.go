@@ -13,7 +13,7 @@ type Provider string
 const YouTubeProvider = Provider("youtube")
 
 // Video represents a video that can be
-// played by a VideoPlayer or added to a VideoQueue
+// played by a Player or added to a VideoQueue
 type Video struct {
 	ID          uuid.UUID           `json:"id"`
 	ProviderID  string              `json:"providerId"`

@@ -92,27 +92,27 @@ func (handler *WsActionHandler) handleUserSetColor() {
 }
 
 func (handler *WsActionHandler) handlePlayerPlay() {
-	if handler.Room.VideoPlayer.CurrentVideo == nil {
-		log.Println("handlePlayerTogglePlaying: CurrentVideo is nil")
+	if handler.Room.Player.Video == nil {
+		log.Println("handlePlayerTogglePlaying: Video is nil")
 		return
 	}
-	handler.Room.VideoPlayer.Playing = true
+	handler.Room.Player.Playing = true
 }
 
 func (handler *WsActionHandler) handlePlayerPause() {
-	if handler.Room.VideoPlayer.CurrentVideo == nil {
-		log.Println("handlePlayerTogglePlaying: CurrentVideo is nil")
+	if handler.Room.Player.Video == nil {
+		log.Println("handlePlayerTogglePlaying: Video is nil")
 		return
 	}
-	handler.Room.VideoPlayer.Playing = false
+	handler.Room.Player.Playing = false
 }
 
 func (handler *WsActionHandler) handlePlayerSkip() {
-	if len(handler.Room.VideoPlayer.Queue.Videos) >= 1 {
+	if len(handler.Room.Player.Queue.Videos) >= 1 {
 		// Set current video
-		handler.Room.VideoPlayer.CurrentVideo = handler.Room.VideoPlayer.Queue.Videos[0]
+		handler.Room.Player.Video = handler.Room.Player.Queue.Videos[0]
 		// Remove current video from queue
-		handler.Room.VideoPlayer.Queue.Remove(handler.Room.VideoPlayer.CurrentVideo.ID)
+		handler.Room.Player.Queue.Remove(handler.Room.Player.Video.ID)
 
 		log.Println("handlePlayerSkip: Video skipped by user:", handler.User)
 		return
@@ -128,12 +128,12 @@ func (handler *WsActionHandler) handleQueueAdd() {
 		return
 	}
 	log.Println("handleQueueAdd:", video)
-	if handler.Room.VideoPlayer.CurrentVideo == nil {
-		handler.Room.VideoPlayer.Play(video)
+	if handler.Room.Player.Video == nil {
+		handler.Room.Player.Play(video)
 		return
 	}
 	video.AddVote(handler.User)
-	handler.Room.VideoPlayer.Queue.Add(handler.User, video)
+	handler.Room.Player.Queue.Add(handler.User, video)
 }
 
 func (handler *WsActionHandler) handleQueueRemove() {
@@ -148,7 +148,7 @@ func (handler *WsActionHandler) handleQueueRemove() {
 		log.Println("handleQueueRemove error:", err)
 		return
 	}
-	handler.Room.VideoPlayer.Queue.Remove(id)
+	handler.Room.Player.Queue.Remove(id)
 }
 
 func (handler *WsActionHandler) handleQueueVote() {
@@ -165,13 +165,13 @@ func (handler *WsActionHandler) handleQueueVote() {
 		return
 	}
 
-	video := handler.Room.VideoPlayer.Queue.Find(id)
+	video := handler.Room.Player.Queue.Find(id)
 	if video == nil {
 		log.Println("handleQueueVote: Video %w not found", id)
 		return
 	}
 
-	handler.Room.VideoPlayer.Queue.ToggleVote(handler.User, video)
+	handler.Room.Player.Queue.ToggleVote(handler.User, video)
 }
 
 func (handler *WsActionHandler) handleChatMessage() {

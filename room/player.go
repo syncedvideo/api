@@ -7,26 +7,27 @@ import (
 	"github.com/google/uuid"
 )
 
-// VideoPlayer represents the room's video player
-type VideoPlayer struct {
-	CurrentVideo *Video        `json:"currentVideo"`
-	CurrentTime  time.Duration `json:"currentTime"`
-	Playing      bool          `json:"playing"`
-	Queue        *VideoQueue   `json:"queue"`
+// Player represents the room's video player
+type Player struct {
+	Video   *Video        `json:"currentVideo"`
+	Time    time.Duration `json:"currentTime"`
+	Playing bool          `json:"playing"`
+	Queue   *VideoQueue   `json:"queue"`
 }
 
 // NewVideoPlayer returns a new video player
-func NewVideoPlayer() *VideoPlayer {
-	return &VideoPlayer{
-		CurrentVideo: nil,
-		Playing:      false,
-		Queue:        NewVideoQueue(),
+func NewVideoPlayer() *Player {
+	return &Player{
+		Video:   nil,
+		Time:    0,
+		Playing: false,
+		Queue:   NewVideoQueue(),
 	}
 }
 
 // Play sets the current video and playing state
-func (player *VideoPlayer) Play(video *Video) {
-	player.CurrentVideo = video
+func (player *Player) Play(video *Video) {
+	player.Video = video
 	player.Playing = true
 }
 
