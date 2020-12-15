@@ -1,6 +1,8 @@
 package room
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 )
 
@@ -23,13 +25,21 @@ func NewRoom(connectionCap int) *Room {
 	}
 }
 
-// Sync room state with all connected users
-func (r *Room) Sync() {
+// BroadcastSync room state with all connected users
+func (r *Room) BroadcastSync() {
 	r.ConnectionHub.BroadcastEvent(WsEvent{
 		Name: WsEventSync,
 		Data: r,
 	})
 }
+
+func (r *Room) BroadcastRoomSeeked(t time.Duration) {
+	r.ConnectionHub.BroadcastEvent(WsEvent{
+		Name: WsEventPlayerSeeked,
+		Data: t,
+	})
+}
+
 func (r *Room) FindUser(id uuid.UUID) *User {
 	connection, exists := r.ConnectionHub.Connections[id]
 	if !exists {

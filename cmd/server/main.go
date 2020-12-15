@@ -112,13 +112,13 @@ func roomWebSocketHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		return
 	}
-	room.Sync()
+	room.BroadcastSync()
 
 	// handle disconnect
 	defer func() {
 		room.ConnectionHub.Disconnect(user, wsConn)
 		wsConn.Close()
-		room.Sync()
+		room.BroadcastSync()
 	}()
 
 	// handle incoming messages

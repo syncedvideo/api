@@ -105,9 +105,8 @@ type WsEventName string
 
 // WebSocket events
 const (
-	WsEventJoin  = WsEventName("join")
-	WsEventLeave = WsEventName("leave")
-	WsEventSync  = WsEventName("sync")
+	WsEventSync         = WsEventName("sync")
+	WsEventPlayerSeeked = WsEventName("player:seeked")
 )
 
 // WsEvent is sent to users

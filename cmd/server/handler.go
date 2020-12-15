@@ -37,7 +37,7 @@ func (handler *WsActionHandler) Handle() {
 	case room.WsActionUserSetColor:
 		handler.handleUserSetColor()
 
-		// Player actions
+	// Player actions
 	case room.WsActionPlayerPlay:
 		handler.handlePlayerPlay()
 	case room.WsActionPlayerPause:
@@ -61,7 +61,7 @@ func (handler *WsActionHandler) Handle() {
 	}
 
 	// Sync room state after handling the action
-	handler.Room.Sync()
+	handler.Room.BroadcastSync()
 }
 
 func (handler *WsActionHandler) handleUserSetBuffering() {
@@ -130,7 +130,7 @@ func (handler *WsActionHandler) handlePlayerSeek() {
 		log.Println("e error:", err)
 		return
 	}
-	handler.Room.Player.Time = t
+	handler.Room.BroadcastRoomSeeked(t)
 }
 
 func (handler *WsActionHandler) handleQueueAdd() {
