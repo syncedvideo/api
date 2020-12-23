@@ -1,8 +1,6 @@
 package room
 
 import (
-	"time"
-
 	"github.com/google/uuid"
 )
 
@@ -33,7 +31,7 @@ func (r *Room) BroadcastSync() {
 	})
 }
 
-func (r *Room) BroadcastRoomSeeked(t time.Duration) {
+func (r *Room) BroadcastRoomSeeked(t int64) {
 	r.ConnectionHub.BroadcastEvent(WsEvent{
 		Name: WsEventPlayerSeeked,
 		Data: t,

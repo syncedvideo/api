@@ -9,10 +9,10 @@ import (
 
 // Player represents the room's video player
 type Player struct {
-	Video   *Video        `json:"video"`
-	Time    time.Duration `json:"time"`
-	Playing bool          `json:"playing"`
-	Queue   *VideoQueue   `json:"queue"`
+	Video   *Video      `json:"video"`
+	Time    int64       `json:"time"`
+	Playing bool        `json:"playing"`
+	Queue   *VideoQueue `json:"queue"`
 }
 
 // NewVideoPlayer returns a new video player
@@ -27,8 +27,32 @@ func NewVideoPlayer() *Player {
 
 // Play sets the current video and playing state
 func (player *Player) Play(video *Video) {
-	player.Video = video
+	if video != player.Video {
+		player.Video = video
+		player.Time = 0
+	}
 	player.Playing = true
+
+	go func() {
+		for {
+			time.Sleep(1 * time.Second)
+			if player.Time >= player.Video.Duration {
+				log.Println("STOP!")
+				player.Playing = false
+				player.Video = nil
+				player.Time = 0
+				return
+			}
+			if !player.Playing {
+				log.Println("STOP!")
+				return
+			}
+			player.Time = player.Time + 1
+			log.Println(player.Time)
+		}
+	}()
+
+	log.Println("PLAY")
 }
 
 // VideoQueue represents the room's video queue

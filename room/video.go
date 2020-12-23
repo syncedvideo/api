@@ -20,7 +20,7 @@ type Video struct {
 	Provider    Provider            `json:"provider"`
 	Title       string              `json:"title"`
 	Description string              `json:"description"`
-	Duration    int                 `json:"duration"`
+	Duration    int64               `json:"duration"`
 	Thumbnail   string              `json:"thumbnail"`
 	AddedBy     *User               `json:"addedBy"`
 	Votes       map[uuid.UUID]*User `json:"votes"`
@@ -85,7 +85,7 @@ func (search *VideoSearch) Do(query string) (*VideoSearch, error) {
 			Title:       ytVideo.Snippet.Title,
 			Description: ytVideo.Snippet.Description,
 			Thumbnail:   ytVideo.Snippet.Thumbnails.High.Url,
-			Duration:    (duration.TM * 60) + duration.TS,
+			Duration:    int64((duration.TM * 60) + duration.TS),
 			Statistics: videoStatistics{
 				ViewCount:    ytVideo.Statistics.ViewCount,
 				LikeCount:    ytVideo.Statistics.LikeCount,

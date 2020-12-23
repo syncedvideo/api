@@ -9,6 +9,7 @@ type User struct {
 	Username  string    `json:"username"`
 	ChatColor string    `json:"chatColor"`
 	Buffering bool      `json:"buffering"`
+	Time      int64     `json:"time"`
 }
 
 // NewUser returns a new user
@@ -17,6 +18,8 @@ func NewUser() *User {
 		ID:        uuid.New(),
 		Username:  "",
 		ChatColor: "",
+		Buffering: false,
+		Time:      0,
 	}
 }
 

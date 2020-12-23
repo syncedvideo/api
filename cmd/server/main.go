@@ -137,8 +137,7 @@ func roomWebSocketHandler(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		wsActionHandler := NewWsActionHandler(wsAction, room, user)
-		wsActionHandler.Handle()
+		NewWsActionHandler(wsAction, room, user).Handle()
 	}
 }
 

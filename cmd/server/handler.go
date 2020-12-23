@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"log"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/syncedvideo/backend/room"
@@ -75,7 +74,7 @@ func (handler *WsActionHandler) handleUserSetBuffering() {
 }
 
 func (handler *WsActionHandler) handleUserSetUsername() {
-	username := ""
+	var username string
 	err := json.Unmarshal(handler.WsAction.Data, &username)
 	if err != nil {
 		log.Println("handleUserSetUsername error:", err)
@@ -85,7 +84,7 @@ func (handler *WsActionHandler) handleUserSetUsername() {
 }
 
 func (handler *WsActionHandler) handleUserSetColor() {
-	color := ""
+	var color string
 	err := json.Unmarshal(handler.WsAction.Data, &color)
 	if err != nil {
 		log.Println("handleUserSetColor error:", err)
@@ -96,27 +95,25 @@ func (handler *WsActionHandler) handleUserSetColor() {
 
 func (handler *WsActionHandler) handlePlayerPlay() {
 	if handler.Room.Player.Video == nil {
-		log.Println("handlePlayerTogglePlaying: Video is nil")
+		log.Println("handlePlayerPlay: Video is nil")
 		return
 	}
-	handler.Room.Player.Playing = true
+	handler.Room.Player.Play(handler.Room.Player.Video)
 }
 
 func (handler *WsActionHandler) handlePlayerPause() {
 	if handler.Room.Player.Video == nil {
-		log.Println("handlePlayerTogglePlaying: Video is nil")
+		log.Println("handlePlayerPause: Video is nil")
 		return
 	}
 	handler.Room.Player.Playing = false
+	log.Println("Player paused")
 }
 
 func (handler *WsActionHandler) handlePlayerSkip() {
 	if len(handler.Room.Player.Queue.Videos) >= 1 {
-		// Set current video
-		handler.Room.Player.Video = handler.Room.Player.Queue.Videos[0]
-		// Remove current video from queue
+		handler.Room.Player.Play(handler.Room.Player.Queue.Videos[0])
 		handler.Room.Player.Queue.Remove(handler.Room.Player.Video.ID)
-
 		log.Println("handlePlayerSkip: Video skipped by user:", handler.User)
 		return
 	}
@@ -124,18 +121,19 @@ func (handler *WsActionHandler) handlePlayerSkip() {
 }
 
 func (handler *WsActionHandler) handlePlayerSeek() {
-	var t time.Duration
+	var t int64
 	err := json.Unmarshal(handler.WsAction.Data, &t)
 	if err != nil {
 		log.Println("e error:", err)
 		return
 	}
+	handler.Room.Player.Time = t
 	handler.Room.BroadcastRoomSeeked(t)
 }
 
 func (handler *WsActionHandler) handleQueueAdd() {
-	video := &room.Video{}
-	err := json.Unmarshal(handler.WsAction.Data, video)
+	var video *room.Video
+	err := json.Unmarshal(handler.WsAction.Data, &video)
 	if err != nil {
 		log.Println("handleQueueAdd error:", err)
 		return
@@ -150,7 +148,7 @@ func (handler *WsActionHandler) handleQueueAdd() {
 }
 
 func (handler *WsActionHandler) handleQueueRemove() {
-	idString := ""
+	var idString string
 	err := json.Unmarshal(handler.WsAction.Data, &idString)
 	if err != nil {
 		log.Println("handleQueueRemove error:", err)
@@ -165,7 +163,7 @@ func (handler *WsActionHandler) handleQueueRemove() {
 }
 
 func (handler *WsActionHandler) handleQueueVote() {
-	idString := ""
+	var idString string
 	err := json.Unmarshal(handler.WsAction.Data, &idString)
 	if err != nil {
 		log.Println("handleQueueVote error:", err)
@@ -188,7 +186,7 @@ func (handler *WsActionHandler) handleQueueVote() {
 }
 
 func (handler *WsActionHandler) handleChatMessage() {
-	text := ""
+	var text string
 	err := json.Unmarshal(handler.WsAction.Data, &text)
 	if err != nil {
 		log.Println("ChatMessage error:", err)
