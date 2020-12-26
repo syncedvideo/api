@@ -2,6 +2,7 @@ package room
 
 import (
 	"log"
+	"sort"
 	"time"
 
 	"github.com/google/uuid"
@@ -58,6 +59,13 @@ func (player *Player) Play(video *Video) {
 // VideoQueue represents the room's video queue
 type VideoQueue struct {
 	Videos []*Video `json:"videos"`
+}
+
+// Sort queue items by vote count
+func (queue *VideoQueue) Sort() {
+	sort.SliceStable(queue.Videos, func(i, j int) bool {
+		return len(queue.Videos[i].Votes) > len(queue.Videos[j].Votes)
+	})
 }
 
 // Find video in queue

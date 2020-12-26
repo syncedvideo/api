@@ -25,6 +25,7 @@ func NewRoom(connectionCap int) *Room {
 
 // BroadcastSync room state with all connected users
 func (r *Room) BroadcastSync() {
+	r.Player.Queue.Sort()
 	r.ConnectionHub.BroadcastEvent(WsEvent{
 		Name: WsEventSync,
 		Data: r,
