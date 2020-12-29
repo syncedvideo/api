@@ -15,14 +15,14 @@ import (
 	roomPackage "github.com/syncedvideo/backend/room"
 )
 
-var addr = flag.String("addr", "localhost:3000", "http service address")
+var addr = flag.String("addr", ":3000", "http service address")
 var frontendURL = flag.String("frontendURL", "localhost:8080", "url of frontend")
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
+	godotenv.Load()
+	// if err != nil {
+	// 	log.Fatal("Error loading .env file")
+	// }
 	flag.Parse()
 	router := chi.NewRouter()
 	router.Post("/room", postRoomHandler)
