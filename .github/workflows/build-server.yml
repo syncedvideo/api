@@ -22,4 +22,4 @@ jobs:
         registry: ghcr.io
         dockerfile: ./cmd/server/Dockerfile
         username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+        password: ${{ secrets.GHCR_TOKEN }}
