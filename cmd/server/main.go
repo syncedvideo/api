@@ -19,10 +19,10 @@ var addr = flag.String("addr", ":3000", "http service address")
 var frontendURL = flag.String("frontendURL", "localhost:8080", "url of frontend")
 
 func main() {
-	godotenv.Load()
-	// if err != nil {
-	// 	log.Fatal("Error loading .env file")
-	// }
+	err := godotenv.Load()
+	if err != nil {
+		log.Println(".env file not found")
+	}
 	flag.Parse()
 	router := chi.NewRouter()
 	router.Post("/room", postRoomHandler)

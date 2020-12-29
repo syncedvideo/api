@@ -12,7 +12,6 @@ RUN go build -o main .
 
 WORKDIR /dist
 RUN cp /build/cmd/server/main .
-RUN cp /build/cmd/server/.env .
 
 FROM scratch
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
