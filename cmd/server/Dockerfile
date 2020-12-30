@@ -1,4 +1,7 @@
 FROM golang:alpine AS builder
+
+ARG YOUTUBE_API_TOKEN
+
 ENV GO111MODULE=on \
     CGO_ENABLED=0 \
     GOOS=linux \
@@ -16,4 +19,4 @@ RUN cp /build/cmd/server/main .
 FROM scratch
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /dist /
-ENTRYPOINT ["/main", "--YOUTUBE_API_TOKEN=$YOUTUBE_API_TOKEN"]
+ENTRYPOINT ["/main", "--YOUTUBE_API_TOKEN={$YOUTUBE_API_TOKEN}"]
