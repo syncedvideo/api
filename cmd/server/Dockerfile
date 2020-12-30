@@ -16,4 +16,4 @@ RUN cp /build/cmd/server/main .
 FROM scratch
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /dist /
-ENTRYPOINT ["/main"]
+ENTRYPOINT ["/main", "--YOUTUBE_API_TOKEN=$YOUTUBE_API_TOKEN"]
