@@ -6,9 +6,6 @@ on:
   pull_request:
     branches: [ master ]
 
-env:
-  YOUTUBE_API_KEY: ${{ env.production.YOUTUBE_API_KEY }}
-
 jobs:
   build-server:
     runs-on: ubuntu-latest
@@ -26,3 +23,6 @@ jobs:
         dockerfile: ./cmd/server/Dockerfile
         username: ${{ github.actor }}
         password: ${{ secrets.GHCR_TOKEN }}
+      env:
+        SERVER: production
+        YOUTUBE_API_KEY: ${{ env.YOUTUBE_API_KEY }}
