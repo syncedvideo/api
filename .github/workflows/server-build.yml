@@ -15,9 +15,7 @@ jobs:
 
       - name: Build docker image
         run: |
-          docker build -t \
-          ghcr.io/syncedvideo/api/server:latest \
-          ./cmd/server/Dockerfile
+          docker build -t ghcr.io/syncedvideo/api/server:latest ./cmd/server/Dockerfile
 
       - name: Push docker image
         run: |
