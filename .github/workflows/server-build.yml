@@ -17,7 +17,8 @@ jobs:
         run: |
           docker build \
           -t ghcr.io/syncedvideo/api/server:latest \
-          -f ./cmd/server/Dockerfile
+          -f Dockerfile \
+          ./cmd/server
 
       - name: Push docker image
         run: |
