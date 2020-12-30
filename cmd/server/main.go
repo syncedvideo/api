@@ -17,7 +17,6 @@ import (
 
 var addr = flag.String("addr", ":3000", "http service address")
 var frontendURL = flag.String("frontendURL", "localhost:8080", "url of frontend")
-var ytAPIToken = flag.String("YOUTUBE_API_TOKEN", "", "YouTube API Token")
 
 func main() {
 	err := godotenv.Load()
@@ -25,10 +24,6 @@ func main() {
 		log.Println(".env file not found")
 	}
 	flag.Parse()
-
-	if *ytAPIToken != "" {
-		os.Setenv("YOUTUBE_API_TOKEN", *ytAPIToken)
-	}
 
 	router := chi.NewRouter()
 	router.Post("/room", postRoomHandler)

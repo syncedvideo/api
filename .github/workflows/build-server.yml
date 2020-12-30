@@ -9,9 +9,6 @@ on:
 jobs:
   build-server:
     runs-on: ubuntu-latest
-    # environment: production
-    # env:
-    #   YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
 
     steps:
     - name: Check out code into the Go module directory
@@ -26,4 +23,3 @@ jobs:
         dockerfile: ./cmd/server/Dockerfile
         username: ${{ github.actor }}
         password: ${{ secrets.GHCR_TOKEN }}
-        buildArgs: YOUTUBE_API_KEY=${{ secrets.YOUTUBE_API_KEY }}
