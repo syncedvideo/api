@@ -31,7 +31,6 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: ./cmd/server
-          file: ./Dockerfile
           tags: syncedvideo/server:latest
           push: true
 
