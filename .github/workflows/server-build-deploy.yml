@@ -43,7 +43,8 @@ jobs:
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
 
-  deploy: 
+  deploy:
+    needs: [build]
     runs-on: ubuntu-latest
     steps:
       - name: Set up kubectl
@@ -52,8 +53,7 @@ jobs:
           personalAccessToken: ${{ secrets.DIGITALOCEAN_TOKEN }}
           clusterName: syncedvideo-prod
         env:
-          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: true
 
       - name: Test!
         run: kubectl get nodes
-
