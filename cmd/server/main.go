@@ -121,6 +121,14 @@ func roomWebSocketHandler(w http.ResponseWriter, r *http.Request) {
 		room.BroadcastSync()
 	}()
 
+	// ping to keep connection alive
+	go func() {
+		for {
+			time.Sleep(time.Second * 5)
+			wsConn.WriteMessage(websocket.TextMessage, []byte("ping"))
+		}
+	}()
+
 	// handle incoming messages
 	for {
 		_, msg, err := wsConn.ReadMessage()
