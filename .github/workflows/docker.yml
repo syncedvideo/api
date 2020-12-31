@@ -18,6 +18,7 @@ jobs:
 
       - name: docker build
         run: |
+          ls -a
           docker build ./cmd/server -t ghcr.io/syncedvideo/api/server:latest
 
       - name: docker push
