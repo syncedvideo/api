@@ -16,13 +16,10 @@ jobs:
         run: |
           docker login ghcr.io -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
           
-      - name: test
-        run: |
-          ls -a
 
       - name: docker build
         run: |
-          docker build ./cmd/server -t ghcr.io/syncedvideo/api/server:latest
+          docker build . -f ./cmd/server/Dockerfile -t ghcr.io/syncedvideo/api/server:latest
 
       - name: docker push
         run: |
