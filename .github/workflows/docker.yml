@@ -15,10 +15,13 @@ jobs:
           DOCKER_PASSWORD: ${{ secrets.GHCR_TOKEN }}
         run: |
           docker login ghcr.io -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+          
+      - name: test
+        run: |
+          ls -a
 
       - name: docker build
         run: |
-          ls -a
           docker build ./cmd/server -t ghcr.io/syncedvideo/api/server:latest
 
       - name: docker push
