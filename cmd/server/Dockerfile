@@ -4,6 +4,8 @@ ENV GO111MODULE=on \
     GOOS=linux \
     GOARCH=amd64
 
+RUN ls -a
+
 WORKDIR /src
 ADD go.mod .
 ADD go.sum .
