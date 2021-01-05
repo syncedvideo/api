@@ -21,7 +21,6 @@
 	
 	"extensions": [
 		"golang.Go",
-		"ms-azuretools.vscode-docker",
 		"2gua.rainbow-brackets",
 		"oderwat.indent-rainbow"
 	]
