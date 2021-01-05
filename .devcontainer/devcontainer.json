@@ -1,0 +1,28 @@
+{
+	"name": "Go",
+	"build": {
+		"dockerfile": "../Dockerfile",
+		"context": "../",
+		"target": "dev"
+	},
+
+	"forwardPorts": [3000],
+
+	"settings": { 
+		"terminal.integrated.shell.linux": "/bin/sh",
+		"go.formatTool": "gofmt",
+		"go.gopath": "/go",
+		"go.useLanguageServer": true,
+		"gopls": {
+			"usePlaceholders": true
+		},
+		"files.eol": "\n"
+	},
+	
+	"extensions": [
+		"golang.Go",
+		"ms-azuretools.vscode-docker",
+		"2gua.rainbow-brackets",
+		"oderwat.indent-rainbow"
+	]
+}

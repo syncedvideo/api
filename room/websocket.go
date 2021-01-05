@@ -107,6 +107,7 @@ type WsEventName string
 const (
 	WsEventSync         = WsEventName("sync")
 	WsEventPlayerSeeked = WsEventName("player:seeked")
+	WsEventPing         = WsEventName("ping")
 )
 
 // WsEvent is sent to users
