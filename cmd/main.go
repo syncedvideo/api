@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"flag"
 	"log"
@@ -12,11 +13,16 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"github.com/joho/godotenv"
-	roomPackage "github.com/syncedvideo/backend/room"
+	"github.com/syncedvideo/api/config"
+	roomPackage "github.com/syncedvideo/api/room"
 )
 
 var addr = flag.String("addr", ":3000", "http service address")
 var frontendURL = flag.String("frontendURL", "localhost:8080", "url of frontend")
+
+func init() {
+	config.NewRedisClient("redis://redis:6379")
+}
 
 func main() {
 	err := godotenv.Load()
@@ -24,6 +30,13 @@ func main() {
 		log.Println(".env file not found")
 	}
 	flag.Parse()
+
+	res, err := config.Redis.Ping(context.Background()).Result()
+	if err != nil {
+		panic(err)
+	}
+
+	log.Println(res)
 
 	router := chi.NewRouter()
 	router.Post("/room", postRoomHandler)

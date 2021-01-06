@@ -3,7 +3,7 @@ package room
 import (
 	"github.com/google/uuid"
 	iso8601 "github.com/senseyeio/duration"
-	"github.com/syncedvideo/backend/youtube"
+	"github.com/syncedvideo/api/youtube"
 )
 
 // Provider to identify the video provider

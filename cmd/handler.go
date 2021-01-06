@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/google/uuid"
-	"github.com/syncedvideo/backend/room"
+	"github.com/syncedvideo/api/room"
 )
 
 // WsActionHandler manages WebSocket action handler methods

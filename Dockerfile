@@ -8,6 +8,7 @@ RUN go get github.com/uudashr/gopkgs/cmd/gopkgs \
     github.com/go-delve/delve/cmd/dlv \
     golang.org/x/lint/golint
 RUN GO111MODULE=on go get golang.org/x/tools/gopls@master golang.org/x/tools@master
+ENV CGO_ENABLED=0
 
 FROM golang:1.15-alpine AS builder
 

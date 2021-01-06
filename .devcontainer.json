@@ -1,16 +1,12 @@
 {
 	"name": "Go",
-	"build": {
-		"dockerfile": "../Dockerfile",
-		"context": "../",
-		"target": "dev"
-	},
 
-	"forwardPorts": [3000],
+	"dockerComposeFile": "./docker-compose.yml",
+	"service": "backend",
+	"workspaceFolder": "/work",
 
-	"settings": { 
+	"settings": {
 		"terminal.integrated.shell.linux": "/bin/sh",
-		"go.formatTool": "gofmt",
 		"go.gopath": "/go",
 		"go.useLanguageServer": true,
 		"gopls": {
@@ -18,7 +14,7 @@
 		},
 		"files.eol": "\n"
 	},
-	
+
 	"extensions": [
 		"golang.Go",
 		"2gua.rainbow-brackets",
