@@ -12,6 +12,13 @@ type User struct {
 	Time      int64     `json:"time"`
 }
 
+type UserStore interface {
+	GetUser(id uuid.UUID) (User, error)
+	CreateUser(u *User) (*User, error)
+	UpdateUser(u *User) (*User, error)
+	DeleteUser(id uuid.UUID) error
+}
+
 // NewUser returns a new user
 func NewUser() *User {
 	return &User{

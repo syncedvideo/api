@@ -1,10 +1,11 @@
 {
 	"name": "Go",
-
-	"dockerComposeFile": "./docker-compose.yml",
-	"service": "backend",
-	"workspaceFolder": "/work",
-
+	"dockerComposeFile": "../docker-compose.yml",
+	"service": "dev",
+	"workspaceFolder": "/workspace",
+	"remoteEnv": {
+		"LOCAL_WORKSPACE_FOLDER": "${localWorkspaceFolder}"
+	},
 	"settings": {
 		"terminal.integrated.shell.linux": "/bin/sh",
 		"go.gopath": "/go",
@@ -14,10 +15,11 @@
 		},
 		"files.eol": "\n"
 	},
-
 	"extensions": [
 		"golang.Go",
 		"2gua.rainbow-brackets",
-		"oderwat.indent-rainbow"
+		"oderwat.indent-rainbow",
+		"ms-azuretools.vscode-docker",
+		"adpyke.vscode-sql-formatter"
 	]
 }

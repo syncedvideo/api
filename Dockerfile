@@ -1,7 +1,8 @@
 FROM golang:1.15-alpine as dev
 
-RUN apk add --no-cache git
-WORKDIR /work
+RUN apk update && apk upgrade && \
+    apk add --no-cache git make docker-cli
+WORKDIR /workspace
 
 RUN go get github.com/uudashr/gopkgs/cmd/gopkgs \
     github.com/ramya-rao-a/go-outline \
@@ -25,9 +26,9 @@ COPY ./go.sum .
 RUN go mod download
 
 COPY . .
-WORKDIR /src/cmd
+WORKDIR /src/cmd/api
 RUN go build -o app
 
 FROM alpine as runtime
-COPY --from=builder /src/cmd/app /
+COPY --from=builder /src/cmd/api/app /
 CMD ./app

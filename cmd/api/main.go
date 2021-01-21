@@ -4,46 +4,72 @@ import (
 	"context"
 	"encoding/json"
 	"flag"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"runtime"
 	"time"
 
 	"github.com/go-chi/chi"
+	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
-	"github.com/joho/godotenv"
-	"github.com/syncedvideo/api/config"
+	"github.com/syncedvideo/api/postgres"
 	roomPackage "github.com/syncedvideo/api/room"
 )
 
-var addr = flag.String("addr", ":3000", "http service address")
-var frontendURL = flag.String("frontendURL", "localhost:8080", "url of frontend")
+var (
+	postgresHost     = os.Getenv("APP_POSTGRES_HOST")
+	postgresPort     = os.Getenv("APP_POSTGRES_PORT")
+	postgresDB       = os.Getenv("APP_POSTGRES_DB")
+	postgresUser     = os.Getenv("APP_POSTGRES_USER")
+	postgresPassword = os.Getenv("APP_POSTGRES_PASSWORD")
+	redisHost        = os.Getenv("APP_REDIS_HOST")
+	redisPort        = os.Getenv("APP_REDIS_PORT")
+	youTubeAPIKey    = os.Getenv("APP_YOUTUBE_API_KEY")
+)
 
-func init() {
-	config.NewRedisClient("redis://redis:6379")
-}
+var addr = flag.String("addr", ":3000", "http service address")
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Println(".env file not found")
-	}
 	flag.Parse()
 
-	res, err := config.Redis.Ping(context.Background()).Result()
+	postgresDsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s sslmode=disable", postgresHost, postgresUser, postgresPassword, postgresDB)
+	store, err := postgres.NewStore(postgresDsn)
 	if err != nil {
 		panic(err)
 	}
 
-	log.Println(res)
+	redisAddr := fmt.Sprintf("redis://%s:%s", redisHost, redisPort)
+	redisClient := redis.NewClient(&redis.Options{Addr: redisAddr})
+	_, err = redisClient.Ping(context.Background()).Result()
+	if err != nil {
+		panic(err)
+	}
 
-	router := chi.NewRouter()
-	router.Post("/room", postRoomHandler)
-	router.HandleFunc("/room/{roomID}", roomWebSocketHandler)
-	router.Get("/search/youtube", searchYouTubeHandler)
-	http.ListenAndServe(*addr, router)
+	h := RegisterHandlers(store, redisClient)
+	log.Printf("http server listening on port %s\n", *addr)
+	go http.ListenAndServe(*addr, h)
+
+	runtime.Goexit()
 }
+
+// pubsub := redisClient.Subscribe(context.Background(), "test")
+// 	ch := pubsub.Channel()
+
+// 	go func() {
+// 		for msg := range ch {
+// 			fmt.Println("received ", msg.Payload)
+// 		}
+// 	}()
+
+// 	go func() {
+// 		for {
+// 			redisClient.Publish(context.Background(), "test", time.Now().String())
+// 			time.Sleep(time.Millisecond * 1000)
+// 		}
+// 	}()
 
 func enableCors(w *http.ResponseWriter) {
 	(*w).Header().Set("Access-Control-Allow-Origin", "*")
@@ -173,7 +199,7 @@ func searchYouTubeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	videoSearch, err := roomPackage.NewVideoSearch(os.Getenv("YOUTUBE_API_KEY")).Do(query)
+	videoSearch, err := roomPackage.NewVideoSearch(youTubeAPIKey).Do(query)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Println("youTubeSearchHandler error:", err)
@@ -183,4 +209,18 @@ func searchYouTubeHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(&videoSearch)
+}
+
+// newRedisClient returns a Redis client
+func newRedisClient(redisURL string) (*redis.Client, error) {
+	opt, err := redis.ParseURL(redisURL)
+	if err != nil {
+		return nil, err
+	}
+	client := redis.NewClient(opt)
+	_, err = client.Ping(context.Background()).Result()
+	if err != nil {
+		return nil, err
+	}
+	return client, nil
 }
