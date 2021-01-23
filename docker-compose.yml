@@ -1,9 +1,9 @@
 version: '3'
 
 services:
-  dev:
+  api:
     build:
-      context: .
+      context: ./api
       dockerfile: ./Dockerfile
       target: dev
     volumes:
@@ -23,6 +23,16 @@ services:
       - APP_REDIS_HOST=${APP_REDIS_HOST}
       - APP_REDIS_PORT=${APP_REDIS_PORT}
       - APP_YOUTUBE_API_KEY=${APP_YOUTUBE_API_KEY}
+    command: sleep infinity
+
+  web:
+    build:
+      context: ./web
+      dockerfile: ./Dockerfile
+    volumes:
+      - .:/workspace:cached
+    ports:
+      - 8080:8080
     command: sleep infinity
 
   postgres:

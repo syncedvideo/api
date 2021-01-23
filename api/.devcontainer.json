@@ -1,0 +1,25 @@
+{
+	"name": "Go",
+
+	"dockerComposeFile": ["../docker-compose.yml"],
+	"service": "api",
+	"workspaceFolder": "/workspace/api",
+	"shutdownAction": "none",
+
+	"settings": {
+		"terminal.integrated.shell.linux": "/bin/sh",
+		"go.gopath": "/go",
+		"go.useLanguageServer": true,
+		"gopls": {
+			"usePlaceholders": true
+		},
+		"files.eol": "\n"
+	},
+	"extensions": [
+		"golang.Go",
+		"2gua.rainbow-brackets",
+		"oderwat.indent-rainbow",
+		"ms-azuretools.vscode-docker",
+		"adpyke.vscode-sql-formatter"
+	]
+}
