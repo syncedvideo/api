@@ -5,6 +5,9 @@
 	"service": "api",
 	"workspaceFolder": "/workspace/api",
 	"shutdownAction": "none",
+	"remoteEnv": {
+		"LOCAL_WORKSPACE_FOLDER": "${localWorkspaceFolder}"
+	},
 
 	"settings": {
 		"terminal.integrated.shell.linux": "/bin/sh",
@@ -15,6 +18,7 @@
 		},
 		"files.eol": "\n"
 	},
+
 	"extensions": [
 		"golang.Go",
 		"2gua.rainbow-brackets",
