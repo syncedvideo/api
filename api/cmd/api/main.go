@@ -196,39 +196,3 @@ func roomWebSocketHandler(w http.ResponseWriter, r *http.Request) {
 		NewWsActionHandler(wsAction, room, user).Handle()
 	}
 }
-
-func searchYouTubeHandler(w http.ResponseWriter, r *http.Request) {
-	enableCors(&w)
-
-	query := r.URL.Query().Get("query")
-	if query == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		log.Println("youTubeSearchHandler: query is empty")
-		return
-	}
-
-	videoSearch, err := syncedvideo.NewVideoSearch(youTubeAPIKey).Do(query)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		log.Println("youTubeSearchHandler error:", err)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(&videoSearch)
-}
-
-// newRedisClient returns a Redis client
-func newRedisClient(redisURL string) (*redis.Client, error) {
-	opt, err := redis.ParseURL(redisURL)
-	if err != nil {
-		return nil, err
-	}
-	client := redis.NewClient(opt)
-	_, err = client.Ping(context.Background()).Result()
-	if err != nil {
-		return nil, err
-	}
-	return client, nil
-}

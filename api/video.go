@@ -2,8 +2,6 @@ package syncedvideo
 
 import (
 	"github.com/google/uuid"
-	iso8601 "github.com/senseyeio/duration"
-	"github.com/syncedvideo/syncedvideo/youtube"
 )
 
 // Provider to identify the video provider
@@ -51,52 +49,4 @@ func (v *Video) ToggleVote(user *User) {
 		return
 	}
 	v.AddVote(user)
-}
-
-// VideoSearch handles the YouTube video search
-type VideoSearch struct {
-	Query         string   `json:"query"`
-	Videos        []*Video `json:"videos"`
-	youTubeAPIkey string   `json:"-"`
-}
-
-// NewVideoSearch returns a new VideoSearch
-func NewVideoSearch(youTubeAPIkey string) *VideoSearch {
-	return &VideoSearch{
-		youTubeAPIkey: youTubeAPIkey,
-	}
-}
-
-// Do execute a YouTube video search
-func (search *VideoSearch) Do(query string) (*VideoSearch, error) {
-	yt := youtube.New(search.youTubeAPIkey)
-	ytVideos, err := yt.SearchVideos(query)
-	if err != nil {
-		return nil, err
-	}
-
-	videos := []*Video{}
-	for _, ytVideo := range ytVideos {
-		duration, _ := iso8601.ParseISO8601(ytVideo.ContentDetails.Duration)
-		videos = append(videos, &Video{
-			ID:          ytVideo.ID,
-			ProviderID:  ytVideo.YouTubeID,
-			Provider:    YouTubeProvider,
-			Title:       ytVideo.Snippet.Title,
-			Description: ytVideo.Snippet.Description,
-			Thumbnail:   ytVideo.Snippet.Thumbnails.High.Url,
-			Duration:    int64((duration.TM * 60) + duration.TS),
-			Statistics: videoStatistics{
-				ViewCount:    ytVideo.Statistics.ViewCount,
-				LikeCount:    ytVideo.Statistics.LikeCount,
-				DislikeCount: ytVideo.Statistics.DislikeCount,
-			},
-			Votes: make(map[uuid.UUID]*User),
-		})
-	}
-
-	return &VideoSearch{
-		Query:  query,
-		Videos: videos,
-	}, nil
 }
