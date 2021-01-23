@@ -1,4 +1,4 @@
-package room
+package syncedvideo
 
 import (
 	"github.com/google/uuid"

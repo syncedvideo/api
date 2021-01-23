@@ -1,4 +1,4 @@
-package room
+package syncedvideo
 
 import (
 	"time"

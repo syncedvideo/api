@@ -15,8 +15,8 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
+	"github.com/syncedvideo/syncedvideo"
 	"github.com/syncedvideo/syncedvideo/postgres"
-	roomPackage "github.com/syncedvideo/syncedvideo/room"
 	"github.com/syncedvideo/syncedvideo/youtube"
 )
 
@@ -45,8 +45,12 @@ func main() {
 		panic(err)
 	}
 
-	redisAddr := fmt.Sprintf("redis://%s:%s", redisHost, redisPort)
-	redisClient := redis.NewClient(&redis.Options{Addr: redisAddr})
+	redisOpts, err := redis.ParseURL(fmt.Sprintf("redis://%s:%s", redisHost, redisPort))
+	if err != nil {
+		panic(err)
+	}
+
+	redisClient := redis.NewClient(redisOpts)
 	_, err = redisClient.Ping(context.Background()).Result()
 	if err != nil {
 		panic(err)
@@ -79,13 +83,13 @@ func enableCors(w *http.ResponseWriter) {
 	(*w).Header().Set("Access-Control-Allow-Origin", "*")
 }
 
-var rooms = make(map[uuid.UUID]*roomPackage.Room)
+var rooms = make(map[uuid.UUID]*syncedvideo.Room)
 
 const connectionCap = 10
 
 func postRoomHandler(w http.ResponseWriter, r *http.Request) {
 	enableCors(&w)
-	newRoom := roomPackage.NewRoom(connectionCap)
+	newRoom := syncedvideo.NewRoom(connectionCap)
 	rooms[newRoom.ID] = newRoom
 	log.Println("Created new room", newRoom.ID)
 	w.Header().Set("Content-Type", "application/json")
@@ -128,7 +132,7 @@ func roomWebSocketHandler(w http.ResponseWriter, r *http.Request) {
 	user := room.FindUser(userIDCookieUUID)
 	if user == nil {
 		// create user
-		user = roomPackage.NewUser()
+		user = syncedvideo.NewUser()
 	}
 
 	// Create userID cookie header
@@ -182,7 +186,7 @@ func roomWebSocketHandler(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 
-		wsAction := &roomPackage.WsAction{}
+		wsAction := &syncedvideo.WsAction{}
 		err = json.Unmarshal(msg, wsAction)
 		if err != nil {
 			log.Println(err)
@@ -203,7 +207,7 @@ func searchYouTubeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	videoSearch, err := roomPackage.NewVideoSearch(youTubeAPIKey).Do(query)
+	videoSearch, err := syncedvideo.NewVideoSearch(youTubeAPIKey).Do(query)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Println("youTubeSearchHandler error:", err)

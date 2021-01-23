@@ -5,18 +5,18 @@ import (
 	"log"
 
 	"github.com/google/uuid"
-	"github.com/syncedvideo/syncedvideo/room"
+	"github.com/syncedvideo/syncedvideo"
 )
 
 // WsActionHandler manages WebSocket action handler methods
 type WsActionHandler struct {
-	WsAction *room.WsAction
-	Room     *room.Room
-	User     *room.User
+	WsAction *syncedvideo.WsAction
+	Room     *syncedvideo.Room
+	User     *syncedvideo.User
 }
 
 // NewWsActionHandler returns a new WsActionHandler
-func NewWsActionHandler(a *room.WsAction, r *room.Room, u *room.User) *WsActionHandler {
+func NewWsActionHandler(a *syncedvideo.WsAction, r *syncedvideo.Room, u *syncedvideo.User) *WsActionHandler {
 	return &WsActionHandler{
 		WsAction: a,
 		Room:     r,
@@ -29,33 +29,33 @@ func (handler *WsActionHandler) Handle() {
 	switch handler.WsAction.Name {
 
 	// User actions
-	case room.WsActionUserSetBuffering:
+	case syncedvideo.WsActionUserSetBuffering:
 		handler.handleUserSetBuffering()
-	case room.WsActionUserSetUsername:
+	case syncedvideo.WsActionUserSetUsername:
 		handler.handleUserSetUsername()
-	case room.WsActionUserSetColor:
+	case syncedvideo.WsActionUserSetColor:
 		handler.handleUserSetColor()
 
 	// Player actions
-	case room.WsActionPlayerPlay:
+	case syncedvideo.WsActionPlayerPlay:
 		handler.handlePlayerPlay()
-	case room.WsActionPlayerPause:
+	case syncedvideo.WsActionPlayerPause:
 		handler.handlePlayerPause()
-	case room.WsActionPlayerSkip:
+	case syncedvideo.WsActionPlayerSkip:
 		handler.handlePlayerSkip()
-	case room.WsActionPlayerSeek:
+	case syncedvideo.WsActionPlayerSeek:
 		handler.handlePlayerSeek()
 
 	// Queue actions
-	case room.WsActionQueueAdd:
+	case syncedvideo.WsActionQueueAdd:
 		handler.handleQueueAdd()
-	case room.WsActionQueueRemove:
+	case syncedvideo.WsActionQueueRemove:
 		handler.handleQueueRemove()
-	case room.WsActionQueueVote:
+	case syncedvideo.WsActionQueueVote:
 		handler.handleQueueVote()
 
 	// Chat actions
-	case room.WsActionChatMessage:
+	case syncedvideo.WsActionChatMessage:
 		handler.handleChatMessage()
 	}
 
@@ -132,7 +132,7 @@ func (handler *WsActionHandler) handlePlayerSeek() {
 }
 
 func (handler *WsActionHandler) handleQueueAdd() {
-	var video *room.Video
+	var video *syncedvideo.Video
 	err := json.Unmarshal(handler.WsAction.Data, &video)
 	if err != nil {
 		log.Println("handleQueueAdd error:", err)
