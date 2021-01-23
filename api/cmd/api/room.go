@@ -11,12 +11,12 @@ import (
 // Handler
 type Handler struct {
 	*chi.Mux
-	store api.Store
+	store syncedvideo.Store
 	redis *redis.Client
 }
 
 // RegisterHandlers registers all handlers
-func RegisterHandlers(store api.Store, redis *redis.Client) *Handler {
+func RegisterHandlers(store syncedvideo.Store, redis *redis.Client) *Handler {
 	h := &Handler{
 		Mux:   chi.NewMux(),
 		store: store,

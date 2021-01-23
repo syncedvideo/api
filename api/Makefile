@@ -1,5 +1,5 @@
 flyway := \
-	docker run --rm -v $${LOCAL_WORKSPACE_FOLDER}/postgres/migrations:/flyway/sql --network api_dev \
+	docker run --rm -v $${LOCAL_WORKSPACE_FOLDER}/postgres/migrations:/flyway/sql --network syncedvideo_dev \
 		flyway/flyway \
 		-user=$${APP_POSTGRES_USER} \
 		-password=$${APP_POSTGRES_PASSWORD} \
@@ -14,4 +14,4 @@ fresh:
 test:
 	go test -v -cover ./...
 
-.PHONY: migrate fresh test web
+.PHONY: migrate fresh test
