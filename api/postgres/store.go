@@ -1,20 +1,20 @@
 package postgres
 
 import (
-	"database/sql"
 	"fmt"
 
+	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq" // required
 )
 
 // Store manages all DB connections
 type Store struct {
-	//
+	*UserStore
 }
 
 // NewStore returns a new store
 func NewStore(dataSourceName string) (*Store, error) {
-	db, err := sql.Open("postgres", dataSourceName)
+	db, err := sqlx.Open("postgres", dataSourceName)
 	if err != nil {
 		return nil, fmt.Errorf("error opening database: %w", err)
 	}
@@ -22,5 +22,7 @@ func NewStore(dataSourceName string) (*Store, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error connecting to database: %w", err)
 	}
-	return &Store{}, nil
+	return &Store{
+		&UserStore{db},
+	}, nil
 }

@@ -4,8 +4,6 @@
   "dockerComposeFile": ["../docker-compose.yml"],
   "service": "web",
 	"workspaceFolder": "/workspace/web",
-  "shutdownAction": "none",
-  
 
   "settings": {
     "terminal.integrated.shell.linux": "/bin/sh"

@@ -1,21 +1,29 @@
 package syncedvideo
 
 import (
+	"net"
+	"time"
+
 	"github.com/google/uuid"
 )
 
 type User struct {
-	ID        uuid.UUID `json:"id"`
-	Username  string    `json:"username"`
-	ChatColor string    `json:"chatColor"`
-	Buffering bool      `json:"buffering"`
-	Time      int64     `json:"time"`
+	ID        uuid.UUID `db:"id" json:"id"`
+	Name      string    `db:"name" json:"username"`
+	Color     string    `db:"color" json:"chatColor"`
+	IsAdmin   bool      `db:"is_admin" json:"isAdmin"`
+	IPAddress net.IP    `db:"ip_address" json:"-"`
+	CreatedAt time.Time `db:"created_at" json:"createdAt"`
+	UpdatedAt time.Time `db:"updated_at" json:"UpdatedAt"`
+
+	Buffering bool  `json:"buffering"`
+	Time      int64 `json:"time"`
 }
 
 type UserStore interface {
 	GetUser(id uuid.UUID) (User, error)
-	CreateUser(u *User) (*User, error)
-	UpdateUser(u *User) (*User, error)
+	CreateUser(u *User) error
+	UpdateUser(u *User) error
 	DeleteUser(id uuid.UUID) error
 }
 
@@ -23,8 +31,8 @@ type UserStore interface {
 func NewUser() *User {
 	return &User{
 		ID:        uuid.New(),
-		Username:  "",
-		ChatColor: "",
+		Name:      "",
+		Color:     "",
 		Buffering: false,
 		Time:      0,
 	}
@@ -38,12 +46,12 @@ func (u *User) SetBuffering(buffering bool) *User {
 
 // SetUsername of user
 func (u *User) SetUsername(name string) *User {
-	u.Username = name
+	u.Name = name
 	return u
 }
 
 // SetChatColor of chat
 func (u *User) SetChatColor(color string) *User {
-	u.ChatColor = color
+	u.Color = color
 	return u
 }

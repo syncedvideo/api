@@ -17,48 +17,44 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/syncedvideo/syncedvideo"
 	"github.com/syncedvideo/syncedvideo/postgres"
-	"github.com/syncedvideo/syncedvideo/youtube"
 )
 
 var (
-	postgresHost     = os.Getenv("APP_POSTGRES_HOST")
-	postgresPort     = os.Getenv("APP_POSTGRES_PORT")
-	postgresDB       = os.Getenv("APP_POSTGRES_DB")
-	postgresUser     = os.Getenv("APP_POSTGRES_USER")
-	postgresPassword = os.Getenv("APP_POSTGRES_PASSWORD")
-	redisHost        = os.Getenv("APP_REDIS_HOST")
-	redisPort        = os.Getenv("APP_REDIS_PORT")
-	youTubeAPIKey    = os.Getenv("APP_YOUTUBE_API_KEY")
+	apiHTTPPort         = os.Getenv("API_HTTP_PORT")
+	apiPostgresHost     = os.Getenv("API_POSTGRES_HOST")
+	apiPostgresPort     = os.Getenv("API_POSTGRES_PORT")
+	apiPostgresDB       = os.Getenv("API_POSTGRES_DB")
+	apiPostgresUser     = os.Getenv("API_POSTGRES_USER")
+	apiPostgresPassword = os.Getenv("API_POSTGRES_PASSWORD")
+	apiRedisHost        = os.Getenv("API_REDIS_HOST")
+	apiRedisPort        = os.Getenv("API_REDIS_PORT")
 )
-
-var addr = flag.String("addr", ":3000", "http service address")
 
 func main() {
 	flag.Parse()
 
-	video, err := youtube.GetVideoInfo("6d6L4-ADF-M")
-	log.Println(video, err)
-
-	postgresDsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s sslmode=disable", postgresHost, postgresUser, postgresPassword, postgresDB)
+	// init store
+	postgresDsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s sslmode=disable", apiPostgresHost, apiPostgresUser, apiPostgresPassword, apiPostgresDB)
 	store, err := postgres.NewStore(postgresDsn)
 	if err != nil {
 		panic(err)
 	}
 
-	redisOpts, err := redis.ParseURL(fmt.Sprintf("redis://%s:%s", redisHost, redisPort))
+	// init redis client
+	redisOpts, err := redis.ParseURL(fmt.Sprintf("redis://%s:%s", apiRedisHost, apiRedisPort))
 	if err != nil {
 		panic(err)
 	}
-
 	redisClient := redis.NewClient(redisOpts)
 	_, err = redisClient.Ping(context.Background()).Result()
 	if err != nil {
 		panic(err)
 	}
 
+	// init http server
 	h := RegisterHandlers(store, redisClient)
-	log.Printf("http server listening on port %s\n", *addr)
-	go http.ListenAndServe(*addr, h)
+	log.Printf("http server listening on port %s\n", apiHTTPPort)
+	go http.ListenAndServe(fmt.Sprintf(":%s", apiHTTPPort), h)
 
 	runtime.Goexit()
 }

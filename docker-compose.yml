@@ -3,7 +3,7 @@ version: '3'
 services:
   api:
     build:
-      context: ./api
+      context: ./api/
       dockerfile: ./Dockerfile
       target: dev
     volumes:
@@ -15,14 +15,14 @@ services:
       - 3000:3000
       - 2345:2345
     environment:
-      - APP_POSTGRES_HOST=${APP_POSTGRES_HOST}
-      - APP_POSTGRES_PORT=${APP_POSTGRES_PORT}
-      - APP_POSTGRES_DB=${APP_POSTGRES_DB}
-      - APP_POSTGRES_USER=${APP_POSTGRES_USER}
-      - APP_POSTGRES_PASSWORD=${APP_POSTGRES_PASSWORD}
-      - APP_REDIS_HOST=${APP_REDIS_HOST}
-      - APP_REDIS_PORT=${APP_REDIS_PORT}
-      - APP_YOUTUBE_API_KEY=${APP_YOUTUBE_API_KEY}
+      - API_HTTP_PORT=${API_HTTP_PORT}
+      - API_POSTGRES_HOST=${API_POSTGRES_HOST}
+      - API_POSTGRES_PORT=${API_POSTGRES_PORT}
+      - API_POSTGRES_DB=${API_POSTGRES_DB}
+      - API_POSTGRES_USER=${API_POSTGRES_USER}
+      - API_POSTGRES_PASSWORD=${API_POSTGRES_PASSWORD}
+      - API_REDIS_HOST=${API_REDIS_HOST}
+      - API_REDIS_PORT=${API_REDIS_PORT}
     command: sleep infinity
 
   web:
@@ -42,9 +42,9 @@ services:
     ports:
       - 5432:5432
     environment:
-      - POSTGRES_DB=${APP_POSTGRES_DB}
-      - POSTGRES_USER=${APP_POSTGRES_USER}
-      - POSTGRES_PASSWORD=${APP_POSTGRES_PASSWORD}
+      - POSTGRES_DB=${API_POSTGRES_DB}
+      - POSTGRES_USER=${API_POSTGRES_USER}
+      - POSTGRES_PASSWORD=${API_POSTGRES_PASSWORD}
     volumes:
       - postgres-data:/var/lib/postgresql/data
 

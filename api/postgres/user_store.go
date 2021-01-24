@@ -1,12 +1,57 @@
 package postgres
 
 import (
-	"database/sql"
+	"fmt"
+	"time"
+
+	"github.com/google/uuid"
+	"github.com/jmoiron/sqlx"
+	"github.com/syncedvideo/syncedvideo"
 )
 
-// UserStore manages the database connection
 type UserStore struct {
-	*sql.DB
+	*sqlx.DB
 }
 
-// func (store *UserStore) GetUser() *syncedvideo.User
+func (db *UserStore) GetUser(id uuid.UUID) (syncedvideo.User, error) {
+	u := syncedvideo.User{}
+	err := db.Get(&u, `SELECT * FROM sv_user where id = $1`, id)
+	if err != nil {
+		return syncedvideo.User{}, fmt.Errorf("error getting user: %w", err)
+	}
+	return u, nil
+}
+
+func (db *UserStore) CreateUser(u *syncedvideo.User) error {
+	createdAt := time.Now().UTC()
+	err := db.Get(u, `
+		INSERT INTO sv_user 
+		VALUES ($1, $2, $3, $4, $5, $6)
+		RETURNING *
+	`, u.ID, u.Name, u.Color, u.IsAdmin, u.IPAddress, createdAt)
+	if err != nil {
+		return fmt.Errorf("error creating user: %w", err)
+	}
+	return nil
+}
+
+func (db *UserStore) UpdateUser(u *syncedvideo.User) error {
+	err := db.Get(u, `
+		UPDATE sv_user
+		SET name = $1, color = $2, is_admin = $3, ip_address = $4, updated_at = $5
+		WHERE id = $6
+		RETURNING *
+	`, u.Name, u.Color, u.IsAdmin, u.IPAddress, u.UpdatedAt, u.ID)
+	if err != nil {
+		return fmt.Errorf("error updating user: %w", err)
+	}
+	return nil
+}
+
+func (db *UserStore) DeleteUser(id uuid.UUID) error {
+	_, err := db.Exec(`DELETE from sv_user WHERE id = $1`, id)
+	if err != nil {
+		return fmt.Errorf("error deleting user: %w", err)
+	}
+	return nil
+}
