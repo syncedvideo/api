@@ -17,14 +17,14 @@ CREATE TABLE IF NOT EXISTS sv_room_user (
     user_id UUID NOT NULL REFERENCES sv_user(id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS sv_queue_item (
+CREATE TABLE IF NOT EXISTS sv_room_playlist_item (
     id UUID PRIMARY KEY,
     room_id UUID NOT NULL REFERENCES sv_room(id) ON DELETE CASCADE,
     user_id UUID NOT NULL REFERENCES sv_user(id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS sv_queue_item_vote (
+CREATE TABLE IF NOT EXISTS sv_room_playlist_item_vote (
     id UUID PRIMARY KEY,
-    queue_item_id UUID NOT NULL REFERENCES sv_queue_item(id) ON DELETE CASCADE,
+    playlist_item_id UUID NOT NULL REFERENCES sv_room_playlist_item(id) ON DELETE CASCADE,
     user_id UUID NOT NULL REFERENCES sv_user(id) ON DELETE CASCADE
 );

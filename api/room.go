@@ -15,6 +15,18 @@ type Room struct {
 	ConnectionHub *ConnectionHub      `json:"connectionHub"`
 }
 
+type PlaylistItem struct {
+	ID     uuid.UUID `db:"id"`
+	RoomID uuid.UUID `db:"room_id"`
+	UserID uuid.UUID `db:"user_id"`
+}
+
+type PlaylistItemVote struct {
+	ID             uuid.UUID `db:"id"`
+	PlaylistItemID uuid.UUID `db:"playlist_item_id"`
+	UserID         uuid.UUID `db:"user_id"`
+}
+
 func NewRoom(connectionCap int) *Room {
 	return &Room{
 		ID:            uuid.New(),

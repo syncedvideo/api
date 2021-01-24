@@ -19,4 +19,9 @@ type RoomStore interface {
 	Create(r *Room) error
 	Update(r *Room) error
 	Delete(id uuid.UUID) error
+	GetPlaylistItem(r *Room, id uuid.UUID) (PlaylistItem, error)
+	GetAllPlaylistItems(r *Room) ([]PlaylistItem, error)
+	CreatePlaylistItem(r *Room, p *PlaylistItem) error
+	UpdatePlaylistItem(r *Room, p *PlaylistItem) error
+	DeletePlaylistItem(r *Room, id uuid.UUID) error
 }

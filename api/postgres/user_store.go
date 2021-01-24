@@ -16,7 +16,7 @@ type UserStore struct {
 
 func (us *UserStore) Get(id uuid.UUID) (syncedvideo.User, error) {
 	u := syncedvideo.User{}
-	err := us.db.Get(&u, `SELECT * FROM sv_user where id = $1`, id)
+	err := us.db.Get(&u, `SELECT * FROM sv_user where id=$1`, id)
 	if err != nil {
 		return syncedvideo.User{}, fmt.Errorf("error getting user: %w", err)
 	}
@@ -39,8 +39,8 @@ func (us *UserStore) Create(u *syncedvideo.User) error {
 func (us *UserStore) Update(u *syncedvideo.User) error {
 	err := us.db.Get(u, `
 		UPDATE sv_user
-		SET name = $1, color = $2, is_admin = $3, updated_at = $4
-		WHERE id = $5
+		SET name=$1, color=$2, is_admin=$3, updated_at=$4
+		WHERE id=$5
 		RETURNING *
 	`, u.Name, u.Color, u.IsAdmin, u.UpdatedAt, u.ID)
 	if err != nil {
@@ -50,7 +50,7 @@ func (us *UserStore) Update(u *syncedvideo.User) error {
 }
 
 func (us *UserStore) Delete(id uuid.UUID) error {
-	_, err := us.db.Exec(`DELETE from sv_user WHERE id = $1`, id)
+	_, err := us.db.Exec(`DELETE from sv_user WHERE id=$1`, id)
 	if err != nil {
 		return fmt.Errorf("error deleting user: %w", err)
 	}
