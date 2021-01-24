@@ -1,9 +1,9 @@
 flyway := \
 	docker run --rm -v $${LOCAL_WORKSPACE_FOLDER}/postgres/migrations:/flyway/sql --network syncedvideo_dev \
 		flyway/flyway \
-		-user=$${APP_POSTGRES_USER} \
-		-password=$${APP_POSTGRES_PASSWORD} \
-		-url=jdbc:postgresql://$${APP_POSTGRES_HOST}:$${APP_POSTGRES_PORT}/$${APP_POSTGRES_DB}?ssl=fals
+		-user=$${API_POSTGRES_USER} \
+		-password=$${API_POSTGRES_PASSWORD} \
+		-url=jdbc:postgresql://$${API_POSTGRES_HOST}:$${API_POSTGRES_PORT}/$${API_POSTGRES_DB}?ssl=false
 
 migrate:
 	$(flyway) migrate
