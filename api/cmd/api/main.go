@@ -40,6 +40,12 @@ func main() {
 		panic(err)
 	}
 
+	r := syncedvideo.Room{ID: uuid.New(), Name: "test"}
+	err = store.CreateRoom(&r)
+	if err != nil {
+		panic(err)
+	}
+
 	// init redis client
 	redisOpts, err := redis.ParseURL(fmt.Sprintf("redis://%s:%s", apiRedisHost, apiRedisPort))
 	if err != nil {

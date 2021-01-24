@@ -9,6 +9,7 @@ import (
 	"github.com/syncedvideo/syncedvideo"
 )
 
+// UserStore implements syncedvideo.UserStore
 type UserStore struct {
 	*sqlx.DB
 }

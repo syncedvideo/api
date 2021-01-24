@@ -7,22 +7,24 @@ import (
 	_ "github.com/lib/pq" // required
 )
 
-// Store manages all DB connections
+// Store implements syncedvideo.Store
 type Store struct {
+	*RoomStore
 	*UserStore
 }
 
 // NewStore returns a new store
-func NewStore(dataSourceName string) (*Store, error) {
+func NewStore(dataSourceName string) (Store, error) {
 	db, err := sqlx.Open("postgres", dataSourceName)
 	if err != nil {
-		return nil, fmt.Errorf("error opening database: %w", err)
+		return Store{}, fmt.Errorf("error opening database: %w", err)
 	}
 	err = db.Ping()
 	if err != nil {
-		return nil, fmt.Errorf("error connecting to database: %w", err)
+		return Store{}, fmt.Errorf("error connecting to database: %w", err)
 	}
-	return &Store{
+	return Store{
+		&RoomStore{db},
 		&UserStore{db},
 	}, nil
 }

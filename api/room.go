@@ -6,11 +6,20 @@ import (
 
 // Room handles state and connected users
 type Room struct {
-	ID            uuid.UUID           `json:"id"`
+	ID            uuid.UUID           `db:"id" json:"id"`
+	Name          string              `db:"name" json:"name"`
+	OwnerUserID   uuid.UUID           `db:"owner_user_id"`
 	Users         map[uuid.UUID]*User `json:"users"`
 	Player        *Player             `json:"player"`
 	Chat          *Chat               `json:"chat"`
 	ConnectionHub *ConnectionHub      `json:"connectionHub"`
+}
+
+type RoomStore interface {
+	GetRoom(id uuid.UUID) (Room, error)
+	CreateRoom(r *Room) error
+	UpdateRoom(r *Room) error
+	DeleteRoom(id uuid.UUID) error
 }
 
 func NewRoom(connectionCap int) *Room {
