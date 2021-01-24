@@ -1,7 +1,6 @@
 package syncedvideo
 
 import (
-	"net"
 	"time"
 
 	"github.com/google/uuid"
@@ -12,7 +11,6 @@ type User struct {
 	Name      string    `db:"name" json:"username"`
 	Color     string    `db:"color" json:"chatColor"`
 	IsAdmin   bool      `db:"is_admin" json:"isAdmin"`
-	IPAddress net.IP    `db:"ip_address" json:"-"`
 	CreatedAt time.Time `db:"created_at" json:"createdAt"`
 	UpdatedAt time.Time `db:"updated_at" json:"UpdatedAt"`
 

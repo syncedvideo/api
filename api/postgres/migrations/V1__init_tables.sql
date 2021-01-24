@@ -3,7 +3,6 @@ CREATE TABLE IF NOT EXISTS sv_user (
     name VARCHAR,
     color VARCHAR,
     is_admin BOOLEAN DEFAULT false,
-    ip_address INET,
     created_at TIMESTAMP NOT NULL
 );
 
