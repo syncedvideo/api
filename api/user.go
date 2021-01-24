@@ -25,7 +25,6 @@ type UserStore interface {
 	DeleteUser(id uuid.UUID) error
 }
 
-// NewUser returns a new user
 func NewUser() *User {
 	return &User{
 		ID:        uuid.New(),
@@ -36,19 +35,16 @@ func NewUser() *User {
 	}
 }
 
-// SetBuffering user prop
 func (u *User) SetBuffering(buffering bool) *User {
 	u.Buffering = buffering
 	return u
 }
 
-// SetUsername of user
 func (u *User) SetUsername(name string) *User {
 	u.Name = name
 	return u
 }
 
-// SetChatColor of chat
 func (u *User) SetChatColor(color string) *User {
 	u.Color = color
 	return u

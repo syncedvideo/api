@@ -8,7 +8,6 @@ import (
 	"github.com/google/uuid"
 )
 
-// Player represents the room's video player
 type Player struct {
 	Video   *Video      `json:"video"`
 	Time    int64       `json:"time"`
@@ -16,7 +15,6 @@ type Player struct {
 	Queue   *VideoQueue `json:"queue"`
 }
 
-// NewVideoPlayer returns a new video player
 func NewVideoPlayer() *Player {
 	return &Player{
 		Video:   nil,
@@ -56,7 +54,6 @@ func (player *Player) Play(video *Video) {
 	log.Println("PLAY")
 }
 
-// VideoQueue represents the room's video queue
 type VideoQueue struct {
 	Videos []*Video `json:"videos"`
 }
@@ -68,7 +65,6 @@ func (queue *VideoQueue) Sort() {
 	})
 }
 
-// Find video in queue
 func (queue *VideoQueue) Find(id uuid.UUID) *Video {
 	for _, video := range queue.Videos {
 		if video.ID == id {
@@ -78,12 +74,10 @@ func (queue *VideoQueue) Find(id uuid.UUID) *Video {
 	return nil
 }
 
-// IsQueued checks if video is queued
 func (queue *VideoQueue) IsQueued(id uuid.UUID) bool {
 	return queue.Find(id) != nil
 }
 
-// Add video to queue
 func (queue *VideoQueue) Add(user *User, video *Video) {
 	if !queue.IsQueued(video.ID) {
 		video.AddedBy = user
@@ -93,7 +87,6 @@ func (queue *VideoQueue) Add(user *User, video *Video) {
 	}
 }
 
-// Remove video from queue
 func (queue *VideoQueue) Remove(id uuid.UUID) {
 	if queue.IsQueued(id) {
 		for i, video := range queue.Videos {
@@ -106,7 +99,6 @@ func (queue *VideoQueue) Remove(id uuid.UUID) {
 	}
 }
 
-// ToggleVote of queued video
 func (queue *VideoQueue) ToggleVote(user *User, video *Video) {
 	if !queue.IsQueued(video.ID) {
 		return
@@ -114,7 +106,6 @@ func (queue *VideoQueue) ToggleVote(user *User, video *Video) {
 	video.ToggleVote(user)
 }
 
-// NewVideoQueue returns a new video queue
 func NewVideoQueue() *VideoQueue {
 	return &VideoQueue{
 		Videos: []*Video{},

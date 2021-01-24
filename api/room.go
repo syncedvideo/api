@@ -13,7 +13,6 @@ type Room struct {
 	ConnectionHub *ConnectionHub      `json:"connectionHub"`
 }
 
-// NewRoom returns a new room
 func NewRoom(connectionCap int) *Room {
 	return &Room{
 		ID:            uuid.New(),
