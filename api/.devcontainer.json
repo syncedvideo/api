@@ -1,24 +1,25 @@
 {
 	"name": "Go",
-
-	"dockerComposeFile": ["../docker-compose.yml"],
+	"dockerComposeFile": [
+		"../docker-compose.yml"
+	],
 	"service": "api",
 	"workspaceFolder": "/workspace/api",
-	
 	"remoteEnv": {
 		"LOCAL_WORKSPACE_FOLDER": "${localWorkspaceFolder}"
 	},
-
 	"settings": {
 		"terminal.integrated.shell.linux": "/bin/sh",
 		"go.gopath": "/go",
+		"go.lintFlags": [
+			"--fast"
+		],
 		"go.useLanguageServer": true,
 		"gopls": {
 			"usePlaceholders": true
 		},
 		"files.eol": "\n"
 	},
-
 	"extensions": [
 		"golang.Go",
 		"2gua.rainbow-brackets",
