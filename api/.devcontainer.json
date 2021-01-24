@@ -24,7 +24,6 @@
 		"golang.Go",
 		"2gua.rainbow-brackets",
 		"oderwat.indent-rainbow",
-		"ms-azuretools.vscode-docker",
 		"adpyke.vscode-sql-formatter"
 	]
 }
