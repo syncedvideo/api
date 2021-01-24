@@ -15,13 +15,6 @@ type Room struct {
 	ConnectionHub *ConnectionHub      `json:"connectionHub"`
 }
 
-type RoomStore interface {
-	GetRoom(id uuid.UUID) (Room, error)
-	CreateRoom(r *Room) error
-	UpdateRoom(r *Room) error
-	DeleteRoom(id uuid.UUID) error
-}
-
 func NewRoom(connectionCap int) *Room {
 	return &Room{
 		ID:            uuid.New(),

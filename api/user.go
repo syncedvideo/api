@@ -18,13 +18,6 @@ type User struct {
 	Time      int64 `json:"time"`
 }
 
-type UserStore interface {
-	GetUser(id uuid.UUID) (User, error)
-	CreateUser(u *User) error
-	UpdateUser(u *User) error
-	DeleteUser(id uuid.UUID) error
-}
-
 func NewUser() *User {
 	return &User{
 		ID:        uuid.New(),
