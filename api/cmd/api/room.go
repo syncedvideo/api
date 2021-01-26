@@ -1,10 +1,13 @@
 package main
 
 import (
+	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/go-chi/chi"
 	"github.com/go-redis/redis/v8"
+	"github.com/google/uuid"
 	"github.com/syncedvideo/syncedvideo"
 )
 
@@ -41,7 +44,16 @@ func RegisterHandlers(store syncedvideo.Store, redis *redis.Client) *Handler {
 }
 
 func (h Handler) CreateRoom(w http.ResponseWriter, r *http.Request) {
-	//
+	room := syncedvideo.Room{ID: uuid.New()}
+	if err := h.store.Room().Create(&room); err != nil {
+		log.Printf("error creating room: %s", err)
+		http.Error(w, "error creating room", http.StatusInternalServerError)
+		return
+	}
+	log.Printf("created room id: %v", room)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(room)
 }
 
 func (h Handler) GetRoom(w http.ResponseWriter, r *http.Request) {

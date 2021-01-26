@@ -6,19 +6,21 @@ import (
 
 // Room handles state and connected users
 type Room struct {
-	ID            uuid.UUID           `db:"id" json:"id"`
-	Name          string              `db:"name" json:"name"`
-	OwnerUserID   uuid.UUID           `db:"owner_user_id"`
-	Users         map[uuid.UUID]*User `json:"users"`
-	Player        *Player             `json:"player"`
-	Chat          *Chat               `json:"chat"`
-	ConnectionHub *ConnectionHub      `json:"connectionHub"`
+	ID            uuid.UUID                  `db:"id" json:"id"`
+	Name          string                     `db:"name" json:"name"`
+	OwnerUserID   uuid.UUID                  `db:"owner_user_id"`
+	Users         map[uuid.UUID]*User        `json:"users"`
+	Player        *Player                    `json:"player"`
+	Chat          *Chat                      `json:"chat"`
+	ConnectionHub *ConnectionHub             `json:"connectionHub"`
+	PlaylistItems map[uuid.UUID]PlaylistItem `json:"playlistItems"`
 }
 
 type PlaylistItem struct {
 	ID     uuid.UUID `db:"id"`
 	RoomID uuid.UUID `db:"room_id"`
 	UserID uuid.UUID `db:"user_id"`
+	Votes  []PlaylistItemVote
 }
 
 type PlaylistItemVote struct {

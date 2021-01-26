@@ -1,18 +1,14 @@
 package syncedvideo
 
 import (
-	"time"
-
 	"github.com/google/uuid"
 )
 
 type User struct {
-	ID        uuid.UUID `db:"id" json:"id"`
-	Name      string    `db:"name" json:"username"`
-	Color     string    `db:"color" json:"chatColor"`
-	IsAdmin   bool      `db:"is_admin" json:"isAdmin"`
-	CreatedAt time.Time `db:"created_at" json:"createdAt"`
-	UpdatedAt time.Time `db:"updated_at" json:"UpdatedAt"`
+	ID      uuid.UUID `db:"user_id" json:"id"`
+	Name    string    `db:"name" json:"username"`
+	Color   string    `db:"color" json:"chatColor"`
+	IsAdmin bool      `db:"is_admin" json:"isAdmin"`
 
 	Buffering bool  `json:"buffering"`
 	Time      int64 `json:"time"`

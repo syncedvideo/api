@@ -25,11 +25,7 @@ func (us *UserStore) Get(id uuid.UUID) (syncedvideo.User, error) {
 
 func (us *UserStore) Create(u *syncedvideo.User) error {
 	createdAt := time.Now().UTC()
-	err := us.db.Get(u, `
-		INSERT INTO sv_user 
-		VALUES ($1, $2, $3, $4, $5)
-		RETURNING *
-	`, u.ID, u.Name, u.Color, u.IsAdmin, createdAt)
+	err := us.db.Get(u, `INSERT INTO sv_user VALUES ($1, $2, $3, $4, $5) RETURNING *`, u.ID, u.Name, u.Color, u.IsAdmin, createdAt)
 	if err != nil {
 		return fmt.Errorf("error creating user: %w", err)
 	}
@@ -37,12 +33,7 @@ func (us *UserStore) Create(u *syncedvideo.User) error {
 }
 
 func (us *UserStore) Update(u *syncedvideo.User) error {
-	err := us.db.Get(u, `
-		UPDATE sv_user
-		SET name=$1, color=$2, is_admin=$3, updated_at=$4
-		WHERE id=$5
-		RETURNING *
-	`, u.Name, u.Color, u.IsAdmin, u.UpdatedAt, u.ID)
+	err := us.db.Get(u, `UPDATE sv_user SET name=$1, color=$2, is_admin=$3 WHERE id=$4 RETURNING *`, u.Name, u.Color, u.IsAdmin, u.ID)
 	if err != nil {
 		return fmt.Errorf("error updating user: %w", err)
 	}
