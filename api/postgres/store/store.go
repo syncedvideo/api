@@ -25,9 +25,15 @@ func NewStore(dataSourceName string) (syncedvideo.Store, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error connecting to database: %w", err)
 	}
+
+	userStore := &UserStore{db}
+	playlistStore := &PlaylistStore{db}
+	roomStore := &RoomStore{db: db, playlist: playlistStore}
+
 	return &Store{
-		user: &UserStore{db},
-		room: &RoomStore{db},
+		user:     userStore,
+		room:     roomStore,
+		playlist: playlistStore,
 	}, nil
 }
 

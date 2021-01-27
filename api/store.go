@@ -13,6 +13,8 @@ type UserStore interface {
 	Create(u *User) error
 	Update(u *User) error
 	Delete(id uuid.UUID) error
+	// Connect(roomID uuid.UUID) error
+	// Disconnect(roomID uuid.UUID) error
 }
 
 type RoomStore interface {
@@ -20,6 +22,8 @@ type RoomStore interface {
 	Create(r *Room) error
 	Update(r *Room) error
 	Delete(id uuid.UUID) error
+	// Connect(userID uuid.UUID) error
+	// Disconnect(userID uuid.UUID) error
 }
 
 type PlaylistStore interface {

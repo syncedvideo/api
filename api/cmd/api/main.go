@@ -52,12 +52,12 @@ func main() {
 	}
 
 	// register http handlers
-	m := chi.NewMux()
-	syncedvideo.RegisterRoomHandler(m, handler.NewRoomHandler(store, redisClient))
+	r := chi.NewRouter()
+	syncedvideo.RegisterRoomHandler(r, handler.NewRoomHandler(store, redisClient))
 
 	// run http server
 	log.Printf("http server listening on port %s\n", apiHTTPPort)
-	err = http.ListenAndServe(fmt.Sprintf(":%s", apiHTTPPort), m)
+	err = http.ListenAndServe(fmt.Sprintf(":%s", apiHTTPPort), r)
 	if err != nil {
 		panic(err)
 	}
