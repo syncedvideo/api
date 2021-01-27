@@ -11,17 +11,15 @@ import (
 	"github.com/syncedvideo/syncedvideo"
 )
 
-// Handler
-type Handler struct {
+type RoomHandler struct {
 	*chi.Mux
 	store syncedvideo.Store
 	redis *redis.Client
 }
 
-// RegisterHandlers registers all handlers
-func RegisterHandlers(store syncedvideo.Store, redis *redis.Client) *Handler {
-	h := &Handler{
-		Mux:   chi.NewMux(),
+func RegisterRoomHandlers(mux *chi.Mux, store syncedvideo.Store, redis *redis.Client) *RoomHandler {
+	h := &RoomHandler{
+		Mux:   mux,
 		store: store,
 		redis: redis,
 	}
@@ -43,7 +41,7 @@ func RegisterHandlers(store syncedvideo.Store, redis *redis.Client) *Handler {
 	return h
 }
 
-func (h Handler) CreateRoom(w http.ResponseWriter, r *http.Request) {
+func (h *RoomHandler) CreateRoom(w http.ResponseWriter, r *http.Request) {
 	room := syncedvideo.Room{ID: uuid.New()}
 	if err := h.store.Room().Create(&room); err != nil {
 		log.Printf("error creating room: %s", err)
@@ -56,7 +54,7 @@ func (h Handler) CreateRoom(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(room)
 }
 
-func (h Handler) GetRoom(w http.ResponseWriter, r *http.Request) {
+func (h *RoomHandler) GetRoom(w http.ResponseWriter, r *http.Request) {
 	id, err := uuid.Parse(chi.URLParam(r, "roomID"))
 	if err != nil {
 		log.Printf("error parsing uuid: %v", err)
@@ -73,38 +71,38 @@ func (h Handler) GetRoom(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(room)
 }
 
-func (h Handler) UpdateRoom(w http.ResponseWriter, r *http.Request) {
+func (h *RoomHandler) UpdateRoom(w http.ResponseWriter, r *http.Request) {
 	//
 }
 
-func (h Handler) DeleteRoom(w http.ResponseWriter, r *http.Request) {
+func (h *RoomHandler) DeleteRoom(w http.ResponseWriter, r *http.Request) {
 	//
 }
 
-func (h Handler) ResumePlayer(w http.ResponseWriter, r *http.Request) {
+func (h *RoomHandler) ResumePlayer(w http.ResponseWriter, r *http.Request) {
 	//
 }
 
-func (h Handler) PausePlayer(w http.ResponseWriter, r *http.Request) {
+func (h *RoomHandler) PausePlayer(w http.ResponseWriter, r *http.Request) {
 	//
 }
 
-func (h Handler) FastForwardPlayer(w http.ResponseWriter, r *http.Request) {
+func (h *RoomHandler) FastForwardPlayer(w http.ResponseWriter, r *http.Request) {
 	//
 }
 
-func (h Handler) SkipPlayer(w http.ResponseWriter, r *http.Request) {
+func (h *RoomHandler) SkipPlayer(w http.ResponseWriter, r *http.Request) {
 	//
 }
 
-func (h Handler) AddQueueItem(w http.ResponseWriter, r *http.Request) {
+func (h *RoomHandler) AddQueueItem(w http.ResponseWriter, r *http.Request) {
 	//
 }
 
-func (h Handler) RemoveQueueItem(w http.ResponseWriter, r *http.Request) {
+func (h *RoomHandler) RemoveQueueItem(w http.ResponseWriter, r *http.Request) {
 	//
 }
 
-func (h Handler) VoteQueueItem(w http.ResponseWriter, r *http.Request) {
+func (h *RoomHandler) VoteQueueItem(w http.ResponseWriter, r *http.Request) {
 	//
 }

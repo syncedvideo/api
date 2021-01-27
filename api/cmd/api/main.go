@@ -8,7 +8,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"runtime"
 	"time"
 
 	"github.com/go-chi/chi"
@@ -16,7 +15,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"github.com/syncedvideo/syncedvideo"
-	"github.com/syncedvideo/syncedvideo/postgres"
+	"github.com/syncedvideo/syncedvideo/handler"
+	"github.com/syncedvideo/syncedvideo/postgres/store"
 )
 
 var (
@@ -35,7 +35,7 @@ func main() {
 
 	// init store
 	postgresDsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s sslmode=disable", apiPostgresHost, apiPostgresUser, apiPostgresPassword, apiPostgresDB)
-	store, err := postgres.NewStore(postgresDsn)
+	store, err := store.NewStore(postgresDsn)
 	if err != nil {
 		panic(err)
 	}
@@ -51,13 +51,16 @@ func main() {
 		panic(err)
 	}
 
-	// init http server
-	h := RegisterHandlers(store, redisClient)
+	// register http handlers
+	m := chi.NewMux()
+	syncedvideo.RegisterRoomHandler(m, handler.NewRoomHandler(store, redisClient))
+
+	// run http server
 	log.Printf("http server listening on port %s\n", apiHTTPPort)
-	if err = http.ListenAndServe(fmt.Sprintf(":%s", apiHTTPPort), h); err != nil {
+	err = http.ListenAndServe(fmt.Sprintf(":%s", apiHTTPPort), m)
+	if err != nil {
 		panic(err)
 	}
-	runtime.Goexit()
 }
 
 // pubsub := redisClient.Subscribe(context.Background(), "test")

@@ -1,4 +1,4 @@
-package postgres
+package store
 
 import (
 	"fmt"
@@ -10,12 +10,13 @@ import (
 
 // Store implements syncedvideo.Store
 type Store struct {
-	user *UserStore
-	room *RoomStore
+	user     *UserStore
+	room     *RoomStore
+	playlist *PlaylistStore
 }
 
 // NewStore returns a new store
-func NewStore(dataSourceName string) (*Store, error) {
+func NewStore(dataSourceName string) (syncedvideo.Store, error) {
 	db, err := sqlx.Open("postgres", dataSourceName)
 	if err != nil {
 		return nil, fmt.Errorf("error opening database: %w", err)
@@ -36,4 +37,8 @@ func (s *Store) User() syncedvideo.UserStore {
 
 func (s *Store) Room() syncedvideo.RoomStore {
 	return s.room
+}
+
+func (s *Store) Playlist() syncedvideo.PlaylistStore {
+	return s.playlist
 }

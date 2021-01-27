@@ -25,9 +25,9 @@ type PlaylistItem struct {
 }
 
 type PlaylistItemVote struct {
-	ID             uuid.UUID `db:"id"`
-	PlaylistItemID uuid.UUID `db:"playlist_item_id"`
-	UserID         uuid.UUID `db:"user_id"`
+	ID     uuid.UUID `db:"id"`
+	ItemID uuid.UUID `db:"item_id"`
+	UserID uuid.UUID `db:"user_id"`
 }
 
 func NewRoom(connectionCap int) *Room {
