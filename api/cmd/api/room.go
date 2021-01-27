@@ -57,7 +57,20 @@ func (h Handler) CreateRoom(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h Handler) GetRoom(w http.ResponseWriter, r *http.Request) {
-	//
+	id, err := uuid.Parse(chi.URLParam(r, "roomID"))
+	if err != nil {
+		log.Printf("error parsing uuid: %v", err)
+		http.Error(w, "room id is invalid", 400)
+		return
+	}
+	room, err := h.store.Room().Get(id)
+	if err != nil {
+		log.Printf("error getting room: %v", err)
+		http.Error(w, "error getting room", 400)
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(room)
 }
 
 func (h Handler) UpdateRoom(w http.ResponseWriter, r *http.Request) {
