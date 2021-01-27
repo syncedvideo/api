@@ -8,6 +8,7 @@ import (
 type Room struct {
 	ID            uuid.UUID                  `db:"id" json:"id"`
 	Name          string                     `db:"name" json:"name"`
+	Description   string                     `db:"description" json:"description"`
 	OwnerUserID   uuid.UUID                  `db:"owner_user_id"`
 	Users         map[uuid.UUID]*User        `json:"users"`
 	Player        *Player                    `json:"player"`

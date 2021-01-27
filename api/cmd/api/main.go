@@ -40,42 +40,6 @@ func main() {
 		panic(err)
 	}
 
-	// test data
-	// user1 := syncedvideo.User{ID: uuid.New(), Name: "Test user 1", Color: "brown", IsAdmin: true}
-	// user2 := syncedvideo.User{ID: uuid.New(), Name: "Test user 2", Color: "red", IsAdmin: false}
-	// store.User().Create(&user1)
-	// store.User().Create(&user2)
-
-	// room := syncedvideo.Room{ID: uuid.New(), Name: "TEST", OwnerUserID: user1.ID}
-	// store.Room().Create(&room)
-
-	// item1 := syncedvideo.PlaylistItem{ID: uuid.New(), RoomID: room.ID, UserID: user1.ID}
-	// item2 := syncedvideo.PlaylistItem{ID: uuid.New(), RoomID: room.ID, UserID: user1.ID}
-	// item3 := syncedvideo.PlaylistItem{ID: uuid.New(), RoomID: room.ID, UserID: user2.ID}
-	// store.Room().CreatePlaylistItem(&room, &item1)
-	// store.Room().CreatePlaylistItem(&room, &item2)
-	// store.Room().CreatePlaylistItem(&room, &item3)
-
-	// vote1 := syncedvideo.PlaylistItemVote{ID: uuid.New(), PlaylistItemID: item1.ID, UserID: user1.ID}
-	// vote2 := syncedvideo.PlaylistItemVote{ID: uuid.New(), PlaylistItemID: item1.ID, UserID: user2.ID}
-	// vote3 := syncedvideo.PlaylistItemVote{ID: uuid.New(), PlaylistItemID: item2.ID, UserID: user1.ID}
-	// vote4 := syncedvideo.PlaylistItemVote{ID: uuid.New(), PlaylistItemID: item3.ID, UserID: user1.ID}
-	// store.Room().
-
-	// fmt.Printf("get room id %s\n", room.ID)
-	// r, err := store.Room().Get(room.ID)
-	r, err := store.Room().Get(uuid.MustParse("eaf05c2c-7dbb-492f-80e0-c3e5188b9c1a"))
-	if err != nil {
-		panic(err)
-	}
-	fmt.Printf("room: %v\n", r)
-	for _, item := range r.PlaylistItems {
-		fmt.Printf("item: %v\n", item)
-		for _, vote := range item.Votes {
-			fmt.Printf("vote: %v\n", vote)
-		}
-	}
-
 	// init redis client
 	redisOpts, err := redis.ParseURL(fmt.Sprintf("redis://%s:%s", apiRedisHost, apiRedisPort))
 	if err != nil {

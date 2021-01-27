@@ -32,7 +32,7 @@ func (rs *RoomStore) Create(r *syncedvideo.Room) error {
 	if r.OwnerUserID != uuid.Nil {
 		ownerID = &r.OwnerUserID
 	}
-	err := rs.db.Get(r, "INSERT INTO sv_room VALUES ($1, $2, $3) RETURNING *", r.ID, ownerID, r.Name)
+	err := rs.db.Get(r, "INSERT INTO sv_room VALUES ($1, $2, $3, $4) RETURNING *", r.ID, ownerID, r.Name, r.Description)
 	if err != nil {
 		return fmt.Errorf("error creating room: %w", err)
 	}

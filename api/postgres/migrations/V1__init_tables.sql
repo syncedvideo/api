@@ -9,7 +9,8 @@ CREATE TABLE IF NOT EXISTS sv_user (
 CREATE TABLE IF NOT EXISTS sv_room (
     id UUID PRIMARY KEY,
     owner_user_id UUID REFERENCES sv_user(id),
-    name VARCHAR
+    name VARCHAR,
+    description VARCHAR
 );
 
 CREATE TABLE IF NOT EXISTS sv_room_user (
