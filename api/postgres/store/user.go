@@ -2,7 +2,6 @@ package store
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
@@ -18,14 +17,13 @@ func (s *UserStore) Get(id uuid.UUID) (syncedvideo.User, error) {
 	u := syncedvideo.User{}
 	err := s.db.Get(&u, `SELECT * FROM sv_user where id=$1`, id)
 	if err != nil {
-		return syncedvideo.User{}, fmt.Errorf("error getting user: %w", err)
+		return syncedvideo.User{}, err
 	}
 	return u, nil
 }
 
 func (s *UserStore) Create(u *syncedvideo.User) error {
-	createdAt := time.Now().UTC()
-	err := s.db.Get(u, `INSERT INTO sv_user VALUES ($1, $2, $3, $4, $5) RETURNING *`, u.ID, u.Name, u.Color, u.IsAdmin, createdAt)
+	err := s.db.Get(u, `INSERT INTO sv_user VALUES ($1, $2, $3, $4) RETURNING *`, u.ID, u.Name, u.Color, u.IsAdmin)
 	if err != nil {
 		return fmt.Errorf("error creating user: %w", err)
 	}

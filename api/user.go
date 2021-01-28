@@ -5,13 +5,12 @@ import (
 )
 
 type User struct {
-	ID      uuid.UUID `db:"user_id" json:"id"`
-	Name    string    `db:"name" json:"username"`
-	Color   string    `db:"color" json:"chatColor"`
-	IsAdmin bool      `db:"is_admin" json:"isAdmin"`
-
-	Buffering bool  `json:"buffering"`
-	Time      int64 `json:"time"`
+	ID        uuid.UUID `db:"id" json:"id"`
+	Name      string    `db:"name" json:"username"`
+	Color     string    `db:"color" json:"chatColor"`
+	IsAdmin   bool      `db:"is_admin" json:"isAdmin"`
+	Buffering bool      `json:"-"`
+	Time      int64     `json:"-"`
 }
 
 func NewUser() *User {
@@ -37,4 +36,8 @@ func (u *User) SetUsername(name string) *User {
 func (u *User) SetChatColor(color string) *User {
 	u.Color = color
 	return u
+}
+
+func (u *User) CanUpdateRoom() bool {
+	return true
 }

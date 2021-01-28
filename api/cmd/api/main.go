@@ -53,6 +53,7 @@ func main() {
 
 	// register http handlers
 	r := chi.NewRouter()
+	syncedvideo.RegisterUserHandler(r, handler.NewUserHandler(store))
 	syncedvideo.RegisterRoomHandler(r, handler.NewRoomHandler(store, redisClient))
 
 	// run http server

@@ -2,8 +2,7 @@ CREATE TABLE IF NOT EXISTS sv_user (
     id UUID PRIMARY KEY,
     name VARCHAR,
     color VARCHAR,
-    is_admin BOOLEAN DEFAULT false,
-    created_at TIMESTAMP NOT NULL
+    is_admin BOOLEAN DEFAULT false
 );
 
 CREATE TABLE IF NOT EXISTS sv_room (

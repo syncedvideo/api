@@ -54,7 +54,17 @@ func (h *RoomHandler) Get(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(room)
 }
 
+func (h *RoomHandler) Update(w http.ResponseWriter, r *http.Request) {
+
+	panic("not implemented") // TODO: Implement
+}
+
+func (h *RoomHandler) Vote(w http.ResponseWriter, r *http.Request) {
+	panic("not implemented") // TODO: Implement
+}
+
 func (h *RoomHandler) Connect(w http.ResponseWriter, r *http.Request) {
+	// get room
 	roomID, err := uuid.Parse(chi.URLParam(r, "roomID"))
 	if err != nil {
 		log.Printf("error parsing roomID: %v\n", err)
@@ -71,6 +81,7 @@ func (h *RoomHandler) Connect(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Printf("connect to room id: %v\n", room.ID)
 
+	// upgrade http to tcp
 	upgrader := websocket.Upgrader{
 		CheckOrigin: func(r *http.Request) bool {
 			return true
@@ -90,12 +101,4 @@ func (h *RoomHandler) Connect(w http.ResponseWriter, r *http.Request) {
 		}
 		log.Printf("recieved message: %v\n", msg)
 	}
-}
-
-func (h *RoomHandler) Update(w http.ResponseWriter, r *http.Request) {
-	panic("not implemented") // TODO: Implement
-}
-
-func (h *RoomHandler) Vote(w http.ResponseWriter, r *http.Request) {
-	panic("not implemented") // TODO: Implement
 }
