@@ -1,6 +1,7 @@
 package store
 
 import (
+	"database/sql"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -17,7 +18,9 @@ type RoomStore struct {
 func (s *RoomStore) Get(id uuid.UUID) (syncedvideo.Room, error) {
 	r := syncedvideo.Room{}
 	err := s.db.Get(&r, "SELECT * FROM sv_room AS room WHERE room.id = $1", id)
-	if err != nil {
+	if err == sql.ErrNoRows {
+		return syncedvideo.Room{}, err
+	} else if err != nil {
 		return syncedvideo.Room{}, fmt.Errorf("error getting room: %w", err)
 	}
 	items, err := s.playlist.All(r.ID)
@@ -29,6 +32,9 @@ func (s *RoomStore) Get(id uuid.UUID) (syncedvideo.Room, error) {
 }
 
 func (s *RoomStore) Create(r *syncedvideo.Room) error {
+	if r.ID == uuid.Nil {
+		r.ID = uuid.New()
+	}
 	var ownerID *uuid.UUID
 	if r.OwnerUserID != uuid.Nil {
 		ownerID = &r.OwnerUserID

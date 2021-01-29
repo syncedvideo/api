@@ -53,8 +53,7 @@ func main() {
 
 	// register http handlers
 	r := chi.NewRouter()
-	syncedvideo.RegisterUserHandler(r, handler.NewUserHandler(store))
-	syncedvideo.RegisterRoomHandler(r, handler.NewRoomHandler(store, redisClient))
+	syncedvideo.RegisterHandlers(r, handler.New(store, redisClient))
 
 	// run http server
 	log.Printf("http server listening on port %s\n", apiHTTPPort)
@@ -87,16 +86,6 @@ func enableCors(w *http.ResponseWriter) {
 var rooms = make(map[uuid.UUID]*syncedvideo.Room)
 
 const connectionCap = 10
-
-// func postRoomHandler(w http.ResponseWriter, r *http.Request) {
-// 	enableCors(&w)
-// 	newRoom := syncedvideo.NewRoom(connectionCap)
-// 	rooms[newRoom.ID] = newRoom
-// 	log.Println("Created new room", newRoom.ID)
-// 	w.Header().Set("Content-Type", "application/json")
-// 	w.WriteHeader(http.StatusCreated)
-// 	json.NewEncoder(w).Encode(newRoom)
-// }
 
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {

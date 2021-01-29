@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"database/sql"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -24,8 +25,9 @@ func NewRoomHandler(s syncedvideo.Store, r *redis.Client) syncedvideo.RoomHandle
 		redis: r,
 	}
 }
+
 func (h *RoomHandler) Create(w http.ResponseWriter, r *http.Request) {
-	room := syncedvideo.Room{ID: uuid.New()}
+	room := syncedvideo.Room{}
 	if err := h.store.Room().Create(&room); err != nil {
 		log.Printf("error creating room: %s", err)
 		http.Error(w, "error creating room", http.StatusInternalServerError)
@@ -45,9 +47,13 @@ func (h *RoomHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	room, err := h.store.Room().Get(id)
-	if err != nil {
+	if err == sql.ErrNoRows {
+		http.Error(w, "room not found", http.StatusNotFound)
+		return
+	} else if err != nil {
 		log.Printf("error getting room: %v", err)
 		http.Error(w, "error getting room", 400)
+		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)

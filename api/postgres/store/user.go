@@ -23,6 +23,9 @@ func (s *UserStore) Get(id uuid.UUID) (syncedvideo.User, error) {
 }
 
 func (s *UserStore) Create(u *syncedvideo.User) error {
+	if u.ID == uuid.Nil {
+		u.ID = uuid.New()
+	}
 	err := s.db.Get(u, `INSERT INTO sv_user VALUES ($1, $2, $3, $4) RETURNING *`, u.ID, u.Name, u.Color, u.IsAdmin)
 	if err != nil {
 		return fmt.Errorf("error creating user: %w", err)
