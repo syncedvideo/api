@@ -2,6 +2,7 @@ package store
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -35,12 +36,13 @@ func (s *RoomStore) Create(r *syncedvideo.Room) error {
 	if r.ID == uuid.Nil {
 		r.ID = uuid.New()
 	}
-	var ownerID *uuid.UUID
-	if r.OwnerUserID != uuid.Nil {
-		ownerID = &r.OwnerUserID
+	if r.OwnerUserID == uuid.Nil {
+		return errors.New("OwnerUserID is required")
 	}
-	err := s.db.Get(r, "INSERT INTO sv_room VALUES ($1, $2, $3, $4) RETURNING *", r.ID, ownerID, r.Name, r.Description)
-	if err != nil {
+	err := s.db.Get(r, "INSERT INTO sv_room VALUES ($1, $2, $3, $4) RETURNING *", r.ID, r.OwnerUserID, r.Name, r.Description)
+	if err == sql.ErrNoRows {
+		return err
+	} else if err != nil {
 		return fmt.Errorf("error creating room: %w", err)
 	}
 	return nil

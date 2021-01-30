@@ -27,7 +27,8 @@ func NewRoomHandler(s syncedvideo.Store, r *redis.Client) syncedvideo.RoomHandle
 }
 
 func (h *RoomHandler) Create(w http.ResponseWriter, r *http.Request) {
-	room := syncedvideo.Room{}
+	user := GetUser(r)
+	room := syncedvideo.Room{OwnerUserID: user.ID}
 	if err := h.store.Room().Create(&room); err != nil {
 		log.Printf("error creating room: %s", err)
 		http.Error(w, "error creating room", http.StatusInternalServerError)
