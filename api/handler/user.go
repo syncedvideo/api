@@ -3,7 +3,6 @@ package handler
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"errors"
 	"log"
 	"net/http"
@@ -35,7 +34,7 @@ func (h *Handlers) UserMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		user, err := getUserFromCookie(r, h.store.User())
 		if err != nil {
-			http.Error(w, "unauthorized", http.StatusUnauthorized)
+			RespondWithError(w, "unauthorized", http.StatusUnauthorized)
 			return
 		}
 		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), userContextKey, user)))
@@ -64,6 +63,7 @@ func getUserFromCookie(r *http.Request, userStore syncedvideo.UserStore) (synced
 	if userIDCookie.Value == "" {
 		return syncedvideo.User{}, errors.New(userCookieKey + " cookie value is empty")
 	}
+
 	userID, err := uuid.Parse(userIDCookie.Value)
 	if err != nil {
 		return syncedvideo.User{}, err
@@ -71,6 +71,7 @@ func getUserFromCookie(r *http.Request, userStore syncedvideo.UserStore) (synced
 	if userID == uuid.Nil {
 		return syncedvideo.User{}, errors.New("userID is nil")
 	}
+
 	user, err := userStore.Get(userID)
 	if err != nil {
 		return syncedvideo.User{}, err
@@ -80,11 +81,12 @@ func getUserFromCookie(r *http.Request, userStore syncedvideo.UserStore) (synced
 
 func (h *UserHandler) Auth(w http.ResponseWriter, r *http.Request) {
 	user := syncedvideo.User{}
+
 	if hasUserCookie(r) {
 		u, err := getUserFromCookie(r, h.store.User())
 		if err != nil && err != sql.ErrNoRows {
 			log.Printf("error getting user: %v", err)
-			http.Error(w, "something went wrong", http.StatusInternalServerError)
+			RespondWithError(w, "something went wrong", http.StatusInternalServerError)
 			return
 		}
 		user = u
@@ -94,7 +96,7 @@ func (h *UserHandler) Auth(w http.ResponseWriter, r *http.Request) {
 		err := h.store.User().Create(&user)
 		if err != nil {
 			log.Printf("error creating user: %v", err)
-			http.Error(w, "something went wrong", http.StatusInternalServerError)
+			RespondWithError(w, "something went wrong", http.StatusInternalServerError)
 		}
 	}
 
@@ -107,7 +109,5 @@ func (h *UserHandler) Auth(w http.ResponseWriter, r *http.Request) {
 		Expires:  time.Now().UTC().Add(24 * time.Hour * 30), // 30 days
 	})
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(user)
+	RespondWithJSON(w, user, http.StatusOK)
 }

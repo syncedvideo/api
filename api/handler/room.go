@@ -2,7 +2,6 @@ package handler
 
 import (
 	"database/sql"
-	"encoding/json"
 	"log"
 	"net/http"
 
@@ -30,35 +29,31 @@ func (h *RoomHandler) Create(w http.ResponseWriter, r *http.Request) {
 	user := GetUser(r)
 	room := syncedvideo.Room{OwnerUserID: user.ID}
 	if err := h.store.Room().Create(&room); err != nil {
-		log.Printf("error creating room: %s", err)
-		http.Error(w, "error creating room", http.StatusInternalServerError)
+		log.Printf("error creating room: %s\n", err)
+		RespondWithError(w, "something went wrong", http.StatusInternalServerError)
 		return
 	}
-	log.Printf("created room id: %v", room.ID)
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(room)
+	log.Printf("created room id: %v\n", room.ID)
+	RespondWithJSON(w, room, http.StatusCreated)
 }
 
 func (h *RoomHandler) Get(w http.ResponseWriter, r *http.Request) {
 	id, err := uuid.Parse(chi.URLParam(r, "roomID"))
 	if err != nil {
 		log.Printf("error parsing uuid: %v", err)
-		http.Error(w, "room id is invalid", 400)
+		RespondWithError(w, "room not found", http.StatusNotFound)
 		return
 	}
 	room, err := h.store.Room().Get(id)
 	if err == sql.ErrNoRows {
-		http.Error(w, "room not found", http.StatusNotFound)
+		RespondWithError(w, "room not found", http.StatusNotFound)
 		return
 	} else if err != nil {
 		log.Printf("error getting room: %v", err)
-		http.Error(w, "error getting room", 400)
+		RespondWithError(w, "something went wrong", http.StatusInternalServerError)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(room)
+	RespondWithJSON(w, room, http.StatusOK)
 }
 
 func (h *RoomHandler) Update(w http.ResponseWriter, r *http.Request) {
