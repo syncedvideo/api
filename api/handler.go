@@ -10,6 +10,7 @@ type Handlers interface {
 	User() UserHandler
 	Room() RoomHandler
 	UserMiddleware(http.Handler) http.Handler
+	CorsMiddleware(http.Handler) http.Handler
 }
 
 type RoomHandler interface {
@@ -25,6 +26,7 @@ type UserHandler interface {
 }
 
 func RegisterHandlers(r chi.Router, h Handlers) {
+	r.Use(h.CorsMiddleware)
 	r.Route("/user", func(rr chi.Router) {
 		rr.Post("/auth", h.User().Auth)
 	})

@@ -12,7 +12,6 @@ import (
 	"github.com/syncedvideo/syncedvideo"
 )
 
-// RoomHandler implements the synvedvideo.RoomHandler interface
 type RoomHandler struct {
 	store syncedvideo.Store
 	redis *redis.Client
@@ -26,7 +25,7 @@ func NewRoomHandler(s syncedvideo.Store, r *redis.Client) syncedvideo.RoomHandle
 }
 
 func (h *RoomHandler) Create(w http.ResponseWriter, r *http.Request) {
-	user := GetUser(r)
+	user := GetUserCtx(r)
 	room := syncedvideo.Room{OwnerUserID: user.ID}
 	if err := h.store.Room().Create(&room); err != nil {
 		log.Printf("error creating room: %s\n", err)
