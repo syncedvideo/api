@@ -1,24 +1,16 @@
 package middleware
 
 import (
-	"context"
 	"errors"
 	"net/http"
 
 	"github.com/google/uuid"
 	"github.com/syncedvideo/syncedvideo"
+	"github.com/syncedvideo/syncedvideo/http/request"
 	"github.com/syncedvideo/syncedvideo/http/response"
 )
 
 const userCookieKey string = "userID"
-
-type contextKey string
-
-func (c contextKey) String() string {
-	return string(c)
-}
-
-var userContextKey contextKey = contextKey("user")
 
 func UserMiddleware(next http.Handler, userStore syncedvideo.UserStore) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -27,12 +19,9 @@ func UserMiddleware(next http.Handler, userStore syncedvideo.UserStore) http.Han
 			response.WithError(w, "unauthorized", http.StatusUnauthorized)
 			return
 		}
-		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), userContextKey, user)))
+		request.WithUser(r, user)
+		next.ServeHTTP(w, r)
 	})
-}
-
-func GetUserCtx(r *http.Request) syncedvideo.User {
-	return r.Context().Value(userContextKey).(syncedvideo.User)
 }
 
 func getUserFromCookie(r *http.Request, userStore syncedvideo.UserStore) (syncedvideo.User, error) {

@@ -11,6 +11,7 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-redis/redis/v8"
 	"github.com/syncedvideo/syncedvideo/http/handler"
+	"github.com/syncedvideo/syncedvideo/http/middleware"
 	"github.com/syncedvideo/syncedvideo/postgres/store"
 )
 
@@ -48,8 +49,9 @@ func main() {
 
 	// register http handlers
 	router := chi.NewRouter()
-	handler.RegisterRoomHandler(router, store, redis)
+	router.Use(middleware.CorsMiddleware)
 	handler.RegisterUserHandler(router, store)
+	handler.RegisterRoomHandler(router, store, redis)
 
 	// run http server
 	log.Printf("http server listening on port %s\n", apiHTTPPort)

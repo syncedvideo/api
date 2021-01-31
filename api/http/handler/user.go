@@ -17,16 +17,16 @@ type userHandler struct {
 	store syncedvideo.Store
 }
 
-func RegisterUserHandler(router chi.Router, store syncedvideo.Store) {
+func RegisterUserHandler(r chi.Router, store syncedvideo.Store) {
 	userHandler := newUserHandler(store)
-	router.Route("/user", func(router2 chi.Router) {
-		router2.Post("/auth", userHandler.Auth)
+	r.Route("/user", func(r chi.Router) {
+		r.Post("/auth", userHandler.Auth)
 	})
 }
 
-func newUserHandler(s syncedvideo.Store) *userHandler {
+func newUserHandler(store syncedvideo.Store) *userHandler {
 	return &userHandler{
-		store: s,
+		store,
 	}
 }
 
@@ -40,7 +40,7 @@ func hasUserCookie(r *http.Request) bool {
 	return c.Value != ""
 }
 
-func getUserFromCookie(r *http.Request, userStore syncedvideo.UserStore) (syncedvideo.User, error) {
+func getUserFromCookie(r *http.Request, u syncedvideo.UserStore) (syncedvideo.User, error) {
 	userIDCookie, err := r.Cookie(userCookieKey)
 	if err != nil {
 		return syncedvideo.User{}, err
@@ -57,7 +57,7 @@ func getUserFromCookie(r *http.Request, userStore syncedvideo.UserStore) (synced
 		return syncedvideo.User{}, errors.New("userID is nil")
 	}
 
-	user, err := userStore.Get(userID)
+	user, err := u.Get(userID)
 	if err != nil {
 		return syncedvideo.User{}, err
 	}
