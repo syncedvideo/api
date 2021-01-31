@@ -14,8 +14,6 @@ type Room struct {
 	Name          string                     `db:"name" json:"name"`
 	Description   string                     `db:"description" json:"description"`
 	OwnerUserID   uuid.UUID                  `json:"ownerUserId" db:"owner_user_id"`
-	Player        *Player                    `json:"player"`
-	ConnectionHub *ConnectionHub             `json:"-"`
 	PlaylistItems map[uuid.UUID]PlaylistItem `json:"playlistItems"`
 
 	Users map[uuid.UUID]*User `json:"users"`
@@ -65,32 +63,6 @@ type PlaylistItemVote struct {
 
 func NewRoom(connectionCap int) *Room {
 	return &Room{
-		ID:            uuid.New(),
-		Player:        NewVideoPlayer(),
-		ConnectionHub: NewConnectionHub(connectionCap),
+		ID: uuid.New(),
 	}
-}
-
-// BroadcastSync room state with all connected users
-func (r *Room) BroadcastSync() {
-	r.Player.Queue.Sort()
-	r.ConnectionHub.BroadcastEvent(WsEvent{
-		Name: WsEventSync,
-		Data: r,
-	})
-}
-
-func (r *Room) BroadcastRoomSeeked(t int64) {
-	r.ConnectionHub.BroadcastEvent(WsEvent{
-		Name: WsEventPlayerSeeked,
-		Data: t,
-	})
-}
-
-func (r *Room) FindUser(id uuid.UUID) *User {
-	connection, exists := r.ConnectionHub.Connections[id]
-	if !exists {
-		return nil
-	}
-	return connection.User
 }

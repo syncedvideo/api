@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 
@@ -97,6 +98,23 @@ func (h *roomHandler) Connect(w http.ResponseWriter, r *http.Request) {
 	// }
 }
 
+type ChatData struct {
+	Message string `json:"message"`
+}
+
 func (h *roomHandler) Chat(w http.ResponseWriter, r *http.Request) {
-	log.Println("hi from chat")
+	data := ChatData{}
+	err := json.NewDecoder(r.Body).Decode(&data)
+	if err != nil {
+		log.Printf("error decoding data: %v\n", err)
+		response.WithError(w, "something went wrong", http.StatusBadRequest)
+		return
+	}
+	if data.Message == "" {
+		response.WithError(w, "message is required", http.StatusBadRequest)
+		return
+	}
+	chatMessage := syncedvideo.NewChatMessage(request.GetUserCtx(r), data.Message)
+	room := request.GetRoomCtx(r)
+	room.Publish(h.redis, chatMessage)
 }

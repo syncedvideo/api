@@ -12,9 +12,18 @@ type Chat struct {
 
 type ChatMessage struct {
 	ID        uuid.UUID `json:"id"`
-	User      *User     `json:"user"`
+	User      User      `json:"user"`
 	Timestamp time.Time `json:"timestamp"`
 	Text      string    `json:"text"`
+}
+
+func NewChatMessage(user User, text string) *ChatMessage {
+	return &ChatMessage{
+		ID:        uuid.New(),
+		User:      user,
+		Timestamp: time.Now(),
+		Text:      text,
+	}
 }
 
 func NewChat() *Chat {
@@ -23,7 +32,7 @@ func NewChat() *Chat {
 	}
 }
 
-func (c *Chat) NewMessage(user *User, text string) *ChatMessage {
+func (c *Chat) NewMessage(user User, text string) *ChatMessage {
 	message := &ChatMessage{
 		ID:        uuid.New(),
 		User:      user,

@@ -1,6 +1,8 @@
 package syncedvideo
 
-import "github.com/google/uuid"
+import (
+	"github.com/google/uuid"
+)
 
 type Store interface {
 	User() UserStore
