@@ -10,8 +10,7 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/go-redis/redis/v8"
-	"github.com/syncedvideo/syncedvideo"
-	"github.com/syncedvideo/syncedvideo/handler"
+	"github.com/syncedvideo/syncedvideo/http/handler"
 	"github.com/syncedvideo/syncedvideo/postgres/store"
 )
 
@@ -41,19 +40,20 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	redisClient := redis.NewClient(redisOpts)
-	_, err = redisClient.Ping(context.Background()).Result()
+	redis := redis.NewClient(redisOpts)
+	_, err = redis.Ping(context.Background()).Result()
 	if err != nil {
 		panic(err)
 	}
 
 	// register http handlers
-	r := chi.NewRouter()
-	syncedvideo.RegisterHandlers(r, handler.New(store, redisClient))
+	router := chi.NewRouter()
+	handler.RegisterRoomHandler(router, store, redis)
+	handler.RegisterUserHandler(router, store)
 
 	// run http server
 	log.Printf("http server listening on port %s\n", apiHTTPPort)
-	err = http.ListenAndServe(fmt.Sprintf(":%s", apiHTTPPort), r)
+	err = http.ListenAndServe(fmt.Sprintf(":%s", apiHTTPPort), router)
 	if err != nil {
 		panic(err)
 	}

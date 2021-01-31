@@ -7,16 +7,25 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-chi/chi"
 	"github.com/google/uuid"
 	"github.com/syncedvideo/syncedvideo"
+	"github.com/syncedvideo/syncedvideo/http/response"
 )
 
-type UserHandler struct {
+type userHandler struct {
 	store syncedvideo.Store
 }
 
-func NewUserHandler(s syncedvideo.Store) syncedvideo.UserHandler {
-	return &UserHandler{
+func RegisterUserHandler(router chi.Router, store syncedvideo.Store) {
+	userHandler := newUserHandler(store)
+	router.Route("/user", func(router2 chi.Router) {
+		router2.Post("/auth", userHandler.Auth)
+	})
+}
+
+func newUserHandler(s syncedvideo.Store) *userHandler {
+	return &userHandler{
 		store: s,
 	}
 }
@@ -55,14 +64,14 @@ func getUserFromCookie(r *http.Request, userStore syncedvideo.UserStore) (synced
 	return user, nil
 }
 
-func (h *UserHandler) Auth(w http.ResponseWriter, r *http.Request) {
+func (h *userHandler) Auth(w http.ResponseWriter, r *http.Request) {
 	user := syncedvideo.User{}
 
 	if hasUserCookie(r) {
 		u, err := getUserFromCookie(r, h.store.User())
 		if err != nil && err != sql.ErrNoRows {
 			log.Printf("error getting user: %v", err)
-			RespondWithError(w, "something went wrong", http.StatusInternalServerError)
+			response.WithError(w, "something went wrong", http.StatusInternalServerError)
 			return
 		}
 		user = u
@@ -72,7 +81,7 @@ func (h *UserHandler) Auth(w http.ResponseWriter, r *http.Request) {
 		err := h.store.User().Create(&user)
 		if err != nil {
 			log.Printf("error creating user: %v", err)
-			RespondWithError(w, "something went wrong", http.StatusInternalServerError)
+			response.WithError(w, "something went wrong", http.StatusInternalServerError)
 		}
 	}
 
@@ -81,9 +90,10 @@ func (h *UserHandler) Auth(w http.ResponseWriter, r *http.Request) {
 		Value:    user.ID.String(),
 		Path:     "/",
 		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
 		Secure:   false,
 		Expires:  time.Now().UTC().Add(24 * time.Hour * 30), // 30 days
 	})
 
-	RespondWithJSON(w, user, http.StatusOK)
+	response.WithJSON(w, user, http.StatusOK)
 }

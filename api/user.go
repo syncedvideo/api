@@ -2,30 +2,21 @@ package syncedvideo
 
 import (
 	"github.com/google/uuid"
+	"github.com/gorilla/websocket"
 )
 
 type User struct {
-	ID        uuid.UUID `db:"id" json:"id"`
-	Name      string    `db:"name" json:"username"`
-	Color     string    `db:"color" json:"chatColor"`
-	IsAdmin   bool      `db:"is_admin" json:"isAdmin"`
-	Buffering bool      `json:"-"`
-	Time      int64     `json:"-"`
+	ID      uuid.UUID `db:"id" json:"id"`
+	Name    string    `db:"name" json:"username"`
+	Color   string    `db:"color" json:"chatColor"`
+	IsAdmin bool      `db:"is_admin" json:"isAdmin"`
+
+	conn *websocket.Conn
+	// send chan []byte
 }
 
-func NewUser() *User {
-	return &User{
-		ID:        uuid.New(),
-		Name:      "",
-		Color:     "",
-		Buffering: false,
-		Time:      0,
-	}
-}
-
-func (u *User) SetBuffering(buffering bool) *User {
-	u.Buffering = buffering
-	return u
+func (u *User) SetConnection(conn *websocket.Conn) {
+	u.conn = conn
 }
 
 func (u *User) SetUsername(name string) *User {
