@@ -2,11 +2,13 @@ package syncedvideo
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
+	"github.com/gorilla/websocket"
 )
 
 type Room struct {
@@ -29,23 +31,32 @@ func (r *Room) Run(user *User, store Store, redis *redis.Client) {
 	r.store = store
 	r.redis = redis
 	pubsub := r.redis.Subscribe(context.Background(), r.ID.String())
+
 	go func() {
-		for msg := range pubsub.Channel() {
-			fmt.Printf("received message: %s", msg)
+		for {
+			_, msg, err := user.conn.ReadMessage()
+			if err != nil {
+				log.Printf("error reading message: %v\n", err)
+				break
+			}
+			log.Printf("recieved message: %v\n", msg)
 		}
 	}()
-	for {
-		_, msg, err := user.conn.ReadMessage()
-		if err != nil {
-			log.Printf("error reading message: %v\n", err)
-			break
-		}
-		log.Printf("recieved message: %v\n", msg)
+
+	for msg := range pubsub.Channel() {
+		fmt.Printf("received message: %s\n", msg)
+		user.conn.WriteMessage(websocket.TextMessage, []byte(msg.Payload))
 	}
 }
 
-func (r *Room) Publish(redis *redis.Client, message interface{}) {
-	redis.Publish(context.Background(), r.ID.String(), message)
+func (r *Room) Publish(redis *redis.Client, message interface{}) error {
+	b, err := json.Marshal(message)
+	if err != nil {
+		return err
+	}
+	redis.Publish(context.Background(), r.ID.String(), b)
+	fmt.Printf("published: %s\n", message)
+	return nil
 }
 
 type PlaylistItem struct {

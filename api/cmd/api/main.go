@@ -60,19 +60,3 @@ func main() {
 		panic(err)
 	}
 }
-
-// pubsub := redisClient.Subscribe(context.Background(), "test")
-// 	ch := pubsub.Channel()
-
-// 	go func() {
-// 		for msg := range ch {
-// 			fmt.Println("received ", msg.Payload)
-// 		}
-// 	}()
-
-// 	go func() {
-// 		for {
-// 			redisClient.Publish(context.Background(), "test", time.Now().String())
-// 			time.Sleep(time.Millisecond * 1000)
-// 		}
-// 	}()

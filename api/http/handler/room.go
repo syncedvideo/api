@@ -88,14 +88,6 @@ func (h *roomHandler) Connect(w http.ResponseWriter, r *http.Request) {
 	user := request.GetUserCtx(r)
 	user.SetConnection(conn)
 	room.Run(&user, h.store, h.redis)
-	// for {
-	// 	_, msg, err := conn.ReadMessage()
-	// 	if err != nil {
-	// 		log.Printf("error reading message: %v\n", err)
-	// 		break
-	// 	}
-	// 	log.Printf("recieved message: %v\n", msg)
-	// }
 }
 
 type ChatData struct {

@@ -13,7 +13,7 @@
 <script lang="ts">
 import { defineComponent, reactive } from 'vue'
 import router from '@/router'
-import { createRoom } from '@/api'
+import { createRoom, auth } from '@/api'
 
 interface State {
   createRoomLoading: boolean
@@ -30,6 +30,7 @@ export default defineComponent({
     async function createRoomHandler() {
       try {
         state.createRoomLoading = true
+        await auth()
         const response = await createRoom()
         router.push({ name: 'ShowRoom', params: { id: response.data.id } })
       } catch (err) {

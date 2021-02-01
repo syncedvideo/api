@@ -1,4 +1,7 @@
 <template>
+  <div>
+    {{ modelValue }}
+  </div>
   <div v-if="room.state.value.data">
     <div class="fixed z-10 inset-x-0 top-0 w-full bg-gray-800 shadow-lg">
       <div class="container mx-auto">
@@ -42,6 +45,7 @@ import AppQueue from './AppQueue'
 import AppChat from './AppChat'
 import AppRoomSettings from './AppRoomSettings'
 import * as room from './'
+import { RoomDto } from '@/api'
 
 export default defineComponent({
   name: 'AppRoom',
@@ -52,6 +56,13 @@ export default defineComponent({
     AppQueue,
     AppChat,
     AppRoomSettings
+  },
+
+  props: {
+    modelValue: {
+      type: Object as () => RoomDto,
+      required: true
+    }
   },
 
   setup() {

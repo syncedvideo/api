@@ -3,13 +3,17 @@ import Axios, { AxiosPromise } from 'axios'
 const httpBaseURL = process.env.VUE_APP_HTTP_BASE_URL
 const webSocketBaseURL = process.env.VUE_APP_WEBSOCKET_BASE_URL
 
-const client = Axios.create({ baseURL: httpBaseURL })
+const client = Axios.create({ baseURL: httpBaseURL, withCredentials: true })
 
 export interface RoomDto {
   id: string
   connectionHub: ConnectionHubDto
   player: PlayerDto
   chat: ChatDto
+}
+
+export function auth(): AxiosPromise<UserDto> {
+  return client.post('/user/auth')
 }
 
 export function createRoom(): AxiosPromise<RoomDto> {
@@ -88,7 +92,7 @@ export function getRoom(id: string): AxiosPromise<RoomDto> {
 }
 
 export function createWebSocket(roomId: string): WebSocket {
-  return new WebSocket(webSocketBaseURL + '/room/' + roomId)
+  return new WebSocket(webSocketBaseURL + '/room/' + roomId + '/connect')
 }
 
 // RoomEvent is broadcasted by WebSocket

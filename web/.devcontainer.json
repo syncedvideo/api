@@ -16,6 +16,6 @@
     "esbenp.prettier-vscode",
     "zignd.html-css-class-completion",
     "oderwat.indent-rainbow",
-    "ms-azuretools.vscode-docker"
+    "msjsdiag.debugger-for-chrome"
   ]
 }
