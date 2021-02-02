@@ -11,21 +11,19 @@ type Store interface {
 }
 
 type UserStore interface {
-	Get(id uuid.UUID) (User, error)
+	Get(userID uuid.UUID) (User, error)
 	Create(u *User) error
 	Update(u *User) error
-	Delete(id uuid.UUID) error
-	// Connect(roomID uuid.UUID) error
-	// Disconnect(roomID uuid.UUID) error
+	Delete(userID uuid.UUID) error
 }
 
 type RoomStore interface {
-	Get(id uuid.UUID) (Room, error)
+	Get(roomID uuid.UUID) (Room, error)
 	Create(r *Room) error
 	Update(r *Room) error
-	Delete(id uuid.UUID) error
-	// Connect(userID uuid.UUID) error
-	// Disconnect(userID uuid.UUID) error
+	Delete(roomID uuid.UUID) error
+	Join(r *Room, u *User) error
+	Leave(r *Room, u *User) error
 }
 
 type PlaylistStore interface {

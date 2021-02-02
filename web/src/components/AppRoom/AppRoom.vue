@@ -1,7 +1,5 @@
 <template>
-  <div>
-    {{ modelValue }}
-  </div>
+  <div>{{ modelValue }}</div>
   <div v-if="room.state.value.data">
     <div class="fixed z-10 inset-x-0 top-0 w-full bg-gray-800 shadow-lg">
       <div class="container mx-auto">

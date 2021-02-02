@@ -92,7 +92,7 @@ export function getRoom(id: string): AxiosPromise<RoomDto> {
 }
 
 export function createWebSocket(roomId: string): WebSocket {
-  return new WebSocket(webSocketBaseURL + '/room/' + roomId + '/connect')
+  return new WebSocket(webSocketBaseURL + '/room/' + roomId + '/join')
 }
 
 // RoomEvent is broadcasted by WebSocket

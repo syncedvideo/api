@@ -32,7 +32,7 @@ func RegisterRoomHandler(r chi.Router, s syncedvideo.Store, rc *redis.Client) {
 			})
 			r.Get("/", roomHandler.Get)
 			r.Put("/", roomHandler.Update)
-			r.HandleFunc("/connect", roomHandler.Connect)
+			r.HandleFunc("/join", roomHandler.Join)
 			r.Post("/chat", roomHandler.Chat)
 		})
 	})
@@ -69,7 +69,7 @@ func (h *roomHandler) Vote(w http.ResponseWriter, r *http.Request) {
 	panic("not implemented") // TODO: Implement
 }
 
-func (h *roomHandler) Connect(w http.ResponseWriter, r *http.Request) {
+func (h *roomHandler) Join(w http.ResponseWriter, r *http.Request) {
 	room := request.GetRoomCtx(r)
 	log.Printf("connect to room id: %v\n", room.ID)
 
@@ -84,7 +84,6 @@ func (h *roomHandler) Connect(w http.ResponseWriter, r *http.Request) {
 		log.Printf("error upgrading to websocket: %v\n", err)
 		return
 	}
-
 	user := request.GetUserCtx(r)
 	user.SetConnection(conn)
 	room.Run(&user, h.store, h.redis)

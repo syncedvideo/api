@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
@@ -28,24 +29,50 @@ type Room struct {
 }
 
 func (r *Room) Run(user *User, store Store, redis *redis.Client) {
-	r.store = store
-	r.redis = redis
-	pubsub := r.redis.Subscribe(context.Background(), r.ID.String())
-
-	go func() {
-		for {
-			_, msg, err := user.conn.ReadMessage()
-			if err != nil {
-				log.Printf("error reading message: %v\n", err)
-				break
-			}
-			log.Printf("recieved message: %v\n", msg)
+	pubsub := redis.Subscribe(context.Background(), r.ID.String())
+	defer func() {
+		user.conn.Close()
+		pubsub.Close()
+		err := store.Room().Leave(r, user)
+		if err != nil {
+			log.Printf("error leaving room: %v", err)
 		}
 	}()
 
-	for msg := range pubsub.Channel() {
-		fmt.Printf("received message: %s\n", msg)
-		user.conn.WriteMessage(websocket.TextMessage, []byte(msg.Payload))
+	err := store.Room().Join(r, user)
+	if err != nil {
+		log.Printf("error joining room: %v", err)
+		return
+	}
+
+	// handle incoming messages
+	go func() {
+		for msg := range pubsub.Channel() {
+			fmt.Printf("received message: %s\n", msg)
+			user.conn.WriteMessage(websocket.TextMessage, []byte(msg.Payload))
+		}
+	}()
+
+	// ping to keep connection alive
+	go func() {
+		for {
+			time.Sleep(time.Second * 5)
+			err := user.conn.WriteMessage(websocket.TextMessage, []byte("ping"))
+			if err != nil {
+				break
+			}
+		}
+	}()
+
+	// ws connection loop
+	for {
+		_, msg, err := user.conn.ReadMessage()
+		if err != nil {
+			log.Println(err)
+			log.Printf("error reading message: %v\n", err)
+			break
+		}
+		log.Printf("recieved message: %v\n", msg)
 	}
 }
 

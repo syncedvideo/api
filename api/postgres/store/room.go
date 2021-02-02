@@ -16,9 +16,9 @@ type RoomStore struct {
 	playlist *PlaylistStore
 }
 
-func (s *RoomStore) Get(id uuid.UUID) (syncedvideo.Room, error) {
+func (s *RoomStore) Get(roomID uuid.UUID) (syncedvideo.Room, error) {
 	r := syncedvideo.Room{}
-	err := s.db.Get(&r, "SELECT * FROM sv_room AS room WHERE room.id = $1", id)
+	err := s.db.Get(&r, "SELECT * FROM sv_room AS room WHERE room.id = $1", roomID)
 	if err == sql.ErrNoRows {
 		return syncedvideo.Room{}, err
 	} else if err != nil {
@@ -56,8 +56,8 @@ func (s *RoomStore) Update(r *syncedvideo.Room) error {
 	return nil
 }
 
-func (s *RoomStore) Delete(id uuid.UUID) error {
-	_, err := s.db.Exec("DELETE FROM sv_room WHERE id=$1", id)
+func (s *RoomStore) Delete(roomID uuid.UUID) error {
+	_, err := s.db.Exec("DELETE FROM sv_room WHERE id=$1", roomID)
 	if err != nil {
 		return fmt.Errorf("error deleting room: %w", err)
 	}
@@ -71,4 +71,35 @@ func (s *RoomStore) GetPlaylistItem(r *syncedvideo.Room, id uuid.UUID) (syncedvi
 		return syncedvideo.PlaylistItem{}, fmt.Errorf("error getting playlist item: %w", err)
 	}
 	return item, nil
+}
+
+func (s *RoomStore) Join(r *syncedvideo.Room, u *syncedvideo.User) error {
+	ru := struct {
+		RoomID uuid.UUID `db:"room_id"`
+		UserID uuid.UUID `db:"user_id"`
+	}{}
+	err := s.db.Get(&ru, "SELECT * from sv_room_user WHERE room_id = $1 AND user_id = $2", r.ID, u.ID)
+	if err != nil && err != sql.ErrNoRows {
+		return err
+	}
+	if ru.RoomID != uuid.Nil || ru.UserID != uuid.Nil {
+		err = s.Leave(r, u)
+		if err != nil {
+			return err
+		}
+	}
+
+	_, err = s.db.Exec("INSERT INTO sv_room_user VALUES($1, $2)", r.ID, u.ID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *RoomStore) Leave(r *syncedvideo.Room, u *syncedvideo.User) error {
+	_, err := s.db.Exec("DELETE FROM sv_room_user WHERE room_id = $1 AND user_id = $2", r.ID, u.ID)
+	if err != nil {
+		return err
+	}
+	return nil
 }

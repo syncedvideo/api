@@ -13,9 +13,9 @@ type UserStore struct {
 	db *sqlx.DB
 }
 
-func (s *UserStore) Get(id uuid.UUID) (syncedvideo.User, error) {
+func (s *UserStore) Get(userID uuid.UUID) (syncedvideo.User, error) {
 	u := syncedvideo.User{}
-	err := s.db.Get(&u, `SELECT * FROM sv_user where id=$1`, id)
+	err := s.db.Get(&u, `SELECT * FROM sv_user where id=$1`, userID)
 	if err != nil {
 		return syncedvideo.User{}, err
 	}
@@ -41,8 +41,8 @@ func (s *UserStore) Update(u *syncedvideo.User) error {
 	return nil
 }
 
-func (s *UserStore) Delete(id uuid.UUID) error {
-	_, err := s.db.Exec(`DELETE from sv_user WHERE id=$1`, id)
+func (s *UserStore) Delete(userID uuid.UUID) error {
+	_, err := s.db.Exec(`DELETE from sv_user WHERE id=$1`, userID)
 	if err != nil {
 		return fmt.Errorf("error deleting user: %w", err)
 	}
