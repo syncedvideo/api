@@ -73,11 +73,13 @@ func (s *RoomStore) GetPlaylistItem(r *syncedvideo.Room, id uuid.UUID) (syncedvi
 	return item, nil
 }
 
+type roomUser struct {
+	RoomID uuid.UUID `db:"room_id"`
+	UserID uuid.UUID `db:"user_id"`
+}
+
 func (s *RoomStore) Join(r *syncedvideo.Room, u *syncedvideo.User) error {
-	ru := struct {
-		RoomID uuid.UUID `db:"room_id"`
-		UserID uuid.UUID `db:"user_id"`
-	}{}
+	ru := roomUser{}
 	err := s.db.Get(&ru, "SELECT * from sv_room_user WHERE room_id = $1 AND user_id = $2", r.ID, u.ID)
 	if err != nil && err != sql.ErrNoRows {
 		return err
@@ -101,5 +103,23 @@ func (s *RoomStore) Leave(r *syncedvideo.Room, u *syncedvideo.User) error {
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func (s *RoomStore) WithUsers(r *syncedvideo.Room) error {
+	users := []syncedvideo.User{}
+	err := s.db.Select(&users, `
+		SELECT su.* 
+		FROM sv_room_user sru 
+		LEFT JOIN sv_user su 
+		ON sru.user_id = su.id 
+		WHERE sru.room_id = $1
+	`, r.ID)
+	if err == sql.ErrNoRows {
+		return sql.ErrNoRows
+	} else if err != nil {
+		return fmt.Errorf("error loading users: %w", err)
+	}
+	r.Users = users
 	return nil
 }

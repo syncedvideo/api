@@ -15,6 +15,5 @@ export function getRoom(roomId: string): AxiosPromise<RoomDto> {
 }
 
 export function createWebSocket(roomId: string): WebSocket {
-  const ws = new WebSocket(webSocketBaseURL + '/room/' + roomId + '/connect')
-  return ws
+  return new WebSocket(webSocketBaseURL + '/room/' + roomId + '/websocket')
 }

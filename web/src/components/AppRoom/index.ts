@@ -7,6 +7,7 @@ import {
   RoomEvent,
   RoomEventName
 } from '@/api'
+import * as roomApi from '@/api/room'
 import { reactive, Ref, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import YouTubePlayer from 'yt-player'
@@ -54,7 +55,7 @@ export function connect() {
   if (!roomId) {
     return
   }
-  socketState.connection = createWebSocket(roomId)
+  socketState.connection = roomApi.createWebSocket(roomId)
   socketState.connection.onopen = onOpenHandler
   socketState.connection.onerror = onErrorHandler
   socketState.connection.onclose = onErrorHandler

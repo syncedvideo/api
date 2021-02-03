@@ -19,7 +19,8 @@ type Room struct {
 	OwnerUserID   uuid.UUID                  `json:"ownerUserId" db:"owner_user_id"`
 	PlaylistItems map[uuid.UUID]PlaylistItem `json:"playlistItems"`
 
-	Users map[uuid.UUID]*User `json:"users"`
+	Users []User `json:"users"`
+	// Users map[uuid.UUID]*User `json:"users"`
 	// broadcast  chan []byte
 	// register   chan *User
 	// unregister chan *User
@@ -76,13 +77,28 @@ func (r *Room) Run(user *User, store Store, redis *redis.Client) {
 	}
 }
 
-func (r *Room) Publish(redis *redis.Client, message interface{}) error {
-	b, err := json.Marshal(message)
+const (
+	MessageRoomJoin  = 1000
+	MessageRoomLeave = 1001
+	MessageRoomChat  = 2000
+)
+
+type Message struct {
+	T int         `json:"t"`
+	D interface{} `json:"d"`
+}
+
+func (r *Room) Publish(redis *redis.Client, msgType int, msgData interface{}) error {
+	msg := Message{
+		T: msgType,
+		D: msgData,
+	}
+	b, err := json.Marshal(msg)
 	if err != nil {
 		return err
 	}
 	redis.Publish(context.Background(), r.ID.String(), b)
-	fmt.Printf("published: %s\n", message)
+	log.Printf("published: %v\n", msg)
 	return nil
 }
 

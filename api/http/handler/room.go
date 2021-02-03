@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -32,7 +33,7 @@ func RegisterRoomHandler(r chi.Router, s syncedvideo.Store, rc *redis.Client) {
 			})
 			r.Get("/", roomHandler.Get)
 			r.Put("/", roomHandler.Update)
-			r.HandleFunc("/join", roomHandler.Join)
+			r.HandleFunc("/websocket", roomHandler.WebSocket)
 			r.Post("/chat", roomHandler.Chat)
 		})
 	})
@@ -58,7 +59,12 @@ func (h *roomHandler) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *roomHandler) Get(w http.ResponseWriter, r *http.Request) {
-	response.WithJSON(w, request.GetRoomCtx(r), http.StatusOK)
+	room := request.GetRoomCtx(r)
+	err := h.store.Room().WithUsers(&room)
+	if err != nil {
+		fmt.Println(err)
+	}
+	response.WithJSON(w, room, http.StatusOK)
 }
 
 func (h *roomHandler) Update(w http.ResponseWriter, r *http.Request) {
@@ -69,7 +75,7 @@ func (h *roomHandler) Vote(w http.ResponseWriter, r *http.Request) {
 	panic("not implemented") // TODO: Implement
 }
 
-func (h *roomHandler) Join(w http.ResponseWriter, r *http.Request) {
+func (h *roomHandler) WebSocket(w http.ResponseWriter, r *http.Request) {
 	room := request.GetRoomCtx(r)
 	log.Printf("connect to room id: %v\n", room.ID)
 
@@ -86,6 +92,9 @@ func (h *roomHandler) Join(w http.ResponseWriter, r *http.Request) {
 	}
 	user := request.GetUserCtx(r)
 	user.SetConnection(conn)
+
+	// room.Publish(redis *redis.Client, message interface{})
+
 	room.Run(&user, h.store, h.redis)
 }
 
@@ -107,5 +116,5 @@ func (h *roomHandler) Chat(w http.ResponseWriter, r *http.Request) {
 	}
 	chatMessage := syncedvideo.NewChatMessage(request.GetUserCtx(r), data.Message)
 	room := request.GetRoomCtx(r)
-	room.Publish(h.redis, chatMessage)
+	room.Publish(h.redis, syncedvideo.MessageRoomChat, chatMessage)
 }

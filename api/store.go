@@ -24,6 +24,7 @@ type RoomStore interface {
 	Delete(roomID uuid.UUID) error
 	Join(r *Room, u *User) error
 	Leave(r *Room, u *User) error
+	WithUsers(r *Room) error
 }
 
 type PlaylistStore interface {
