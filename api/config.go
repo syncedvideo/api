@@ -4,7 +4,7 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
-var Config config
+var Config *config
 
 type config struct {
 	Store Store
@@ -12,7 +12,7 @@ type config struct {
 }
 
 func RegisterConfig(store Store, redis *redis.Client) {
-	Config = config{
+	Config = &config{
 		store,
 		redis,
 	}
