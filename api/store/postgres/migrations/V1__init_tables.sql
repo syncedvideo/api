@@ -12,7 +12,8 @@ CREATE TABLE IF NOT EXISTS sv_room (
     description VARCHAR
 );
 
-CREATE TABLE IF NOT EXISTS sv_room_user (
+CREATE TABLE IF NOT EXISTS sv_room_user_connection (
+    connection_id UUID PRIMARY KEY,
     room_id UUID NOT NULL REFERENCES sv_room(id) ON DELETE CASCADE,
     user_id UUID NOT NULL REFERENCES sv_user(id) ON DELETE CASCADE
 );

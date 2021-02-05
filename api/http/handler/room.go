@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi"
-	"github.com/go-redis/redis/v8"
+	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"github.com/syncedvideo/syncedvideo"
 	"github.com/syncedvideo/syncedvideo/http/middleware"
@@ -15,22 +15,15 @@ import (
 	"github.com/syncedvideo/syncedvideo/http/response"
 )
 
-type roomHandler struct {
-	store syncedvideo.Store
-	redis *redis.Client
-}
+type roomHandler struct{}
 
-func RegisterRoomHandler(r chi.Router, s syncedvideo.Store, rc *redis.Client) {
-	roomHandler := newRoomHandler(s, rc)
+func RegisterRoomHandler(r chi.Router) {
+	roomHandler := newRoomHandler()
 	r.Route("/room", func(r chi.Router) {
-		r.Use(func(next http.Handler) http.Handler {
-			return middleware.UserMiddleware(next, s.User())
-		})
+		r.Use(middleware.UserMiddleware)
 		r.Post("/", roomHandler.Create)
 		r.Route("/{roomID}", func(r chi.Router) {
-			r.Use(func(next http.Handler) http.Handler {
-				return middleware.RoomMiddleware(next, s.Room())
-			})
+			r.Use(middleware.RoomMiddleware)
 			r.Get("/", roomHandler.Get)
 			r.Put("/", roomHandler.Update)
 			r.HandleFunc("/websocket", roomHandler.WebSocket)
@@ -39,17 +32,14 @@ func RegisterRoomHandler(r chi.Router, s syncedvideo.Store, rc *redis.Client) {
 	})
 }
 
-func newRoomHandler(store syncedvideo.Store, redis *redis.Client) *roomHandler {
-	return &roomHandler{
-		store,
-		redis,
-	}
+func newRoomHandler() *roomHandler {
+	return &roomHandler{}
 }
 
 func (h *roomHandler) Create(w http.ResponseWriter, r *http.Request) {
 	user := request.GetUserCtx(r)
 	room := syncedvideo.Room{OwnerUserID: user.ID}
-	if err := h.store.Room().Create(&room); err != nil {
+	if err := syncedvideo.Config.Store.Room().Create(&room); err != nil {
 		log.Printf("error creating room: %s\n", err)
 		response.WithError(w, "something went wrong", http.StatusInternalServerError)
 		return
@@ -60,7 +50,7 @@ func (h *roomHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 func (h *roomHandler) Get(w http.ResponseWriter, r *http.Request) {
 	room := request.GetRoomCtx(r)
-	err := h.store.Room().WithUsers(&room)
+	err := syncedvideo.Config.Store.Room().WithUsers(&room)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -91,11 +81,17 @@ func (h *roomHandler) WebSocket(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	user := request.GetUserCtx(r)
-	user.SetConnection(conn)
+	user.ConnectionID = uuid.New()
+	user.Connection = conn
 
-	// room.Publish(redis *redis.Client, message interface{})
-
-	room.Run(&user, h.store, h.redis)
+	defer func() {
+		user.Connection.Close()
+		syncedvideo.Config.Store.Room().Leave(&room, &user)
+		room.Publish(syncedvideo.WebSocketMessageLeave, user)
+	}()
+	syncedvideo.Config.Store.Room().Join(&room, &user)
+	room.Publish(syncedvideo.WebSocketMessageJoin, user)
+	room.Run(&user)
 }
 
 type ChatData struct {
@@ -116,5 +112,5 @@ func (h *roomHandler) Chat(w http.ResponseWriter, r *http.Request) {
 	}
 	chatMessage := syncedvideo.NewChatMessage(request.GetUserCtx(r), data.Message)
 	room := request.GetRoomCtx(r)
-	room.Publish(h.redis, syncedvideo.MessageRoomChat, chatMessage)
+	room.Publish(syncedvideo.WebSocketMessageChat, chatMessage)
 }

@@ -12,9 +12,9 @@ import (
 
 const userCookieKey string = "userID"
 
-func UserMiddleware(next http.Handler, userStore syncedvideo.UserStore) http.Handler {
+func UserMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		user, err := getUserFromCookie(r, userStore)
+		user, err := getUserFromCookie(r)
 		if err != nil {
 			response.WithError(w, "unauthorized", http.StatusUnauthorized)
 			return
@@ -24,7 +24,7 @@ func UserMiddleware(next http.Handler, userStore syncedvideo.UserStore) http.Han
 	})
 }
 
-func getUserFromCookie(r *http.Request, userStore syncedvideo.UserStore) (syncedvideo.User, error) {
+func getUserFromCookie(r *http.Request) (syncedvideo.User, error) {
 	userIDCookie, err := r.Cookie(userCookieKey)
 	if err != nil {
 		return syncedvideo.User{}, err
@@ -41,7 +41,7 @@ func getUserFromCookie(r *http.Request, userStore syncedvideo.UserStore) (synced
 		return syncedvideo.User{}, errors.New("userID is nil")
 	}
 
-	user, err := userStore.Get(userID)
+	user, err := syncedvideo.Config.Store.User().Get(userID)
 	if err != nil {
 		return syncedvideo.User{}, err
 	}

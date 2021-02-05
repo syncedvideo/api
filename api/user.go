@@ -6,17 +6,12 @@ import (
 )
 
 type User struct {
-	ID      uuid.UUID `db:"id" json:"id"`
-	Name    string    `db:"name" json:"username"`
-	Color   string    `db:"color" json:"chatColor"`
-	IsAdmin bool      `db:"is_admin" json:"isAdmin"`
-
-	conn *websocket.Conn
-	// send chan []byte
-}
-
-func (u *User) SetConnection(conn *websocket.Conn) {
-	u.conn = conn
+	ID           uuid.UUID       `db:"id" json:"id"`
+	Name         string          `db:"name" json:"username"`
+	Color        string          `db:"color" json:"chatColor"`
+	IsAdmin      bool            `db:"is_admin" json:"isAdmin"`
+	Connection   *websocket.Conn `json:"-"`
+	ConnectionID uuid.UUID       `json:"-"`
 }
 
 func (u *User) SetUsername(name string) *User {

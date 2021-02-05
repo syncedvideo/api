@@ -13,21 +13,17 @@ import (
 	"github.com/syncedvideo/syncedvideo/http/response"
 )
 
-type userHandler struct {
-	store syncedvideo.Store
-}
+type userHandler struct{}
 
-func RegisterUserHandler(r chi.Router, store syncedvideo.Store) {
-	userHandler := newUserHandler(store)
+func RegisterUserHandler(r chi.Router) {
+	userHandler := newUserHandler()
 	r.Route("/user", func(r chi.Router) {
 		r.Post("/auth", userHandler.Auth)
 	})
 }
 
-func newUserHandler(store syncedvideo.Store) *userHandler {
-	return &userHandler{
-		store,
-	}
+func newUserHandler() *userHandler {
+	return &userHandler{}
 }
 
 const userCookieKey string = "userID"
@@ -40,7 +36,7 @@ func hasUserCookie(r *http.Request) bool {
 	return c.Value != ""
 }
 
-func getUserFromCookie(r *http.Request, u syncedvideo.UserStore) (syncedvideo.User, error) {
+func getUserFromCookie(r *http.Request) (syncedvideo.User, error) {
 	userIDCookie, err := r.Cookie(userCookieKey)
 	if err != nil {
 		return syncedvideo.User{}, err
@@ -57,7 +53,7 @@ func getUserFromCookie(r *http.Request, u syncedvideo.UserStore) (syncedvideo.Us
 		return syncedvideo.User{}, errors.New("userID is nil")
 	}
 
-	user, err := u.Get(userID)
+	user, err := syncedvideo.Config.Store.User().Get(userID)
 	if err != nil {
 		return syncedvideo.User{}, err
 	}
@@ -68,7 +64,7 @@ func (h *userHandler) Auth(w http.ResponseWriter, r *http.Request) {
 	user := syncedvideo.User{}
 
 	if hasUserCookie(r) {
-		u, err := getUserFromCookie(r, h.store.User())
+		u, err := getUserFromCookie(r)
 		if err != nil && err != sql.ErrNoRows {
 			log.Printf("error getting user: %v", err)
 			response.WithError(w, "something went wrong", http.StatusInternalServerError)
@@ -78,7 +74,7 @@ func (h *userHandler) Auth(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if user.ID == uuid.Nil {
-		err := h.store.User().Create(&user)
+		err := syncedvideo.Config.Store.User().Create(&user)
 		if err != nil {
 			log.Printf("error creating user: %v", err)
 			response.WithError(w, "something went wrong", http.StatusInternalServerError)

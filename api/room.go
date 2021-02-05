@@ -7,7 +7,6 @@ import (
 	"log"
 	"time"
 
-	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 )
@@ -24,33 +23,17 @@ type Room struct {
 	// broadcast  chan []byte
 	// register   chan *User
 	// unregister chan *User
-
-	store Store
-	redis *redis.Client
 }
 
-func (r *Room) Run(user *User, store Store, redis *redis.Client) {
-	pubsub := redis.Subscribe(context.Background(), r.ID.String())
+func (r *Room) Run(user *User) {
+	pubsub := Config.Redis.Subscribe(context.Background(), r.ID.String())
 	defer func() {
-		user.conn.Close()
 		pubsub.Close()
-		err := store.Room().Leave(r, user)
-		if err != nil {
-			log.Printf("error leaving room: %v", err)
-		}
 	}()
-
-	err := store.Room().Join(r, user)
-	if err != nil {
-		log.Printf("error joining room: %v", err)
-		return
-	}
-
-	// handle incoming messages
 	go func() {
 		for msg := range pubsub.Channel() {
 			fmt.Printf("received message: %s\n", msg)
-			user.conn.WriteMessage(websocket.TextMessage, []byte(msg.Payload))
+			user.Connection.WriteMessage(websocket.TextMessage, []byte(msg.Payload))
 		}
 	}()
 
@@ -58,7 +41,7 @@ func (r *Room) Run(user *User, store Store, redis *redis.Client) {
 	go func() {
 		for {
 			time.Sleep(time.Second * 5)
-			err := user.conn.WriteMessage(websocket.TextMessage, []byte("ping"))
+			err := user.Connection.WriteMessage(websocket.TextMessage, []byte("ping"))
 			if err != nil {
 				break
 			}
@@ -67,7 +50,7 @@ func (r *Room) Run(user *User, store Store, redis *redis.Client) {
 
 	// ws connection loop
 	for {
-		_, msg, err := user.conn.ReadMessage()
+		_, msg, err := user.Connection.ReadMessage()
 		if err != nil {
 			log.Println(err)
 			log.Printf("error reading message: %v\n", err)
@@ -78,18 +61,19 @@ func (r *Room) Run(user *User, store Store, redis *redis.Client) {
 }
 
 const (
-	MessageRoomJoin  = 1000
-	MessageRoomLeave = 1001
-	MessageRoomChat  = 2000
+	WebSocketMessageJoin      = 1000
+	WebSocketMessageLeave     = 1001
+	WebSocketMessageChat      = 2000
+	WebSocketMessageSyncUsers = 3000
 )
 
-type Message struct {
+type WebSocketMessage struct {
 	T int         `json:"t"`
 	D interface{} `json:"d"`
 }
 
-func (r *Room) Publish(redis *redis.Client, msgType int, msgData interface{}) error {
-	msg := Message{
+func (r *Room) Publish(msgType int, msgData interface{}) error {
+	msg := WebSocketMessage{
 		T: msgType,
 		D: msgData,
 	}
@@ -97,9 +81,13 @@ func (r *Room) Publish(redis *redis.Client, msgType int, msgData interface{}) er
 	if err != nil {
 		return err
 	}
-	redis.Publish(context.Background(), r.ID.String(), b)
+	Config.Redis.Publish(context.Background(), r.ID.String(), b)
 	log.Printf("published: %v\n", msg)
 	return nil
+}
+
+func (r *Room) SyncUsers() error {
+	return r.Publish(WebSocketMessageSyncUsers, r.Users)
 }
 
 type PlaylistItem struct {

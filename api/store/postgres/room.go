@@ -1,4 +1,4 @@
-package store
+package postgres
 
 import (
 	"database/sql"
@@ -10,7 +10,6 @@ import (
 	"github.com/syncedvideo/syncedvideo"
 )
 
-// RoomStore implements syncedvideo.RoomStore
 type RoomStore struct {
 	db       *sqlx.DB
 	playlist *PlaylistStore
@@ -73,25 +72,19 @@ func (s *RoomStore) GetPlaylistItem(r *syncedvideo.Room, id uuid.UUID) (syncedvi
 	return item, nil
 }
 
-type roomUser struct {
-	RoomID uuid.UUID `db:"room_id"`
-	UserID uuid.UUID `db:"user_id"`
+type roomUserConnection struct {
+	ConnectionID uuid.UUID `db:"connection_id"`
+	RoomID       uuid.UUID `db:"room_id"`
+	UserID       uuid.UUID `db:"user_id"`
 }
 
 func (s *RoomStore) Join(r *syncedvideo.Room, u *syncedvideo.User) error {
-	ru := roomUser{}
-	err := s.db.Get(&ru, "SELECT * from sv_room_user WHERE room_id = $1 AND user_id = $2", r.ID, u.ID)
-	if err != nil && err != sql.ErrNoRows {
-		return err
+	ru := roomUserConnection{
+		ConnectionID: u.ConnectionID,
+		RoomID:       r.ID,
+		UserID:       u.ID,
 	}
-	if ru.RoomID != uuid.Nil || ru.UserID != uuid.Nil {
-		err = s.Leave(r, u)
-		if err != nil {
-			return err
-		}
-	}
-
-	_, err = s.db.Exec("INSERT INTO sv_room_user VALUES($1, $2)", r.ID, u.ID)
+	_, err := s.db.Exec("INSERT INTO sv_room_user_connection VALUES($1, $2, $3)", ru.ConnectionID, ru.RoomID, ru.UserID)
 	if err != nil {
 		return err
 	}
@@ -99,7 +92,7 @@ func (s *RoomStore) Join(r *syncedvideo.Room, u *syncedvideo.User) error {
 }
 
 func (s *RoomStore) Leave(r *syncedvideo.Room, u *syncedvideo.User) error {
-	_, err := s.db.Exec("DELETE FROM sv_room_user WHERE room_id = $1 AND user_id = $2", r.ID, u.ID)
+	_, err := s.db.Exec("DELETE FROM sv_room_user_connection WHERE connection_id = $1", u.ConnectionID)
 	if err != nil {
 		return err
 	}
@@ -110,10 +103,10 @@ func (s *RoomStore) WithUsers(r *syncedvideo.Room) error {
 	users := []syncedvideo.User{}
 	err := s.db.Select(&users, `
 		SELECT su.* 
-		FROM sv_room_user sru 
+		FROM sv_room_user_connection sruc 
 		LEFT JOIN sv_user su 
-		ON sru.user_id = su.id 
-		WHERE sru.room_id = $1
+		ON sruc.user_id = su.id 
+		WHERE sruc.room_id = $1
 	`, r.ID)
 	if err == sql.ErrNoRows {
 		return sql.ErrNoRows

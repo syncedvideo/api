@@ -1,4 +1,4 @@
-package store
+package postgres
 
 import (
 	"fmt"
@@ -8,7 +8,6 @@ import (
 	"github.com/syncedvideo/syncedvideo"
 )
 
-// Store implements syncedvideo.Store
 type Store struct {
 	user     *UserStore
 	room     *RoomStore

@@ -10,9 +10,10 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/go-redis/redis/v8"
+	"github.com/syncedvideo/syncedvideo"
 	"github.com/syncedvideo/syncedvideo/http/handler"
 	"github.com/syncedvideo/syncedvideo/http/middleware"
-	"github.com/syncedvideo/syncedvideo/postgres/store"
+	"github.com/syncedvideo/syncedvideo/store/postgres"
 )
 
 var (
@@ -31,7 +32,7 @@ func main() {
 
 	// init store
 	postgresDsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s sslmode=disable", apiPostgresHost, apiPostgresUser, apiPostgresPassword, apiPostgresDB)
-	store, err := store.NewStore(postgresDsn)
+	store, err := postgres.NewStore(postgresDsn)
 	if err != nil {
 		panic(err)
 	}
@@ -47,11 +48,14 @@ func main() {
 		panic(err)
 	}
 
+	// register config
+	syncedvideo.RegisterConfig(store, redis)
+
 	// register http handlers
 	router := chi.NewRouter()
 	router.Use(middleware.CorsMiddleware)
-	handler.RegisterUserHandler(router, store)
-	handler.RegisterRoomHandler(router, store, redis)
+	handler.RegisterUserHandler(router)
+	handler.RegisterRoomHandler(router)
 
 	// run http server
 	log.Printf("http server listening on port %s\n", apiHTTPPort)
@@ -59,4 +63,5 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	os.Exit(0)
 }

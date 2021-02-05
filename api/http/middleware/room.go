@@ -12,7 +12,7 @@ import (
 	"github.com/syncedvideo/syncedvideo/http/response"
 )
 
-func RoomMiddleware(next http.Handler, rs syncedvideo.RoomStore) http.Handler {
+func RoomMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		id, err := uuid.Parse(chi.URLParam(r, "roomID"))
 		if err != nil {
@@ -20,7 +20,7 @@ func RoomMiddleware(next http.Handler, rs syncedvideo.RoomStore) http.Handler {
 			response.WithError(w, "room not found", http.StatusNotFound)
 			return
 		}
-		room, err := rs.Get(id)
+		room, err := syncedvideo.Config.Store.Room().Get(id)
 		if err == sql.ErrNoRows {
 			response.WithError(w, "room not found", http.StatusNotFound)
 			return

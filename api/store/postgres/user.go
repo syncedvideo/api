@@ -1,4 +1,4 @@
-package store
+package postgres
 
 import (
 	"fmt"
@@ -8,7 +8,6 @@ import (
 	"github.com/syncedvideo/syncedvideo"
 )
 
-// UserStore implements syncedvideo.UserStore
 type UserStore struct {
 	db *sqlx.DB
 }
