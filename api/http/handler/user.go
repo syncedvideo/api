@@ -74,6 +74,7 @@ func (h *userHandler) Auth(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if user.ID == uuid.Nil {
+		user = syncedvideo.NewUser()
 		err := syncedvideo.Config.Store.User().Create(&user)
 		if err != nil {
 			log.Printf("error creating user: %v", err)
