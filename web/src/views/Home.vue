@@ -1,8 +1,8 @@
 <template>
   <div class="container mx-auto">
     <button
-      @click="createRoomHandler()"
-      :disabled="state.createRoomLoading"
+      @click="createRoom"
+      :disabled="loading"
       class="px-5 py-3 font-semibold bg-white focus:outline-none rounded disabled:opacity-50 text-gray-500"
     >
       Create room
@@ -11,35 +11,30 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive } from 'vue'
+import { defineComponent, ref } from 'vue'
 import router from '@/router'
-import { createRoom, auth } from '@/api'
-
-interface State {
-  createRoomLoading: boolean
-}
+import * as userApi from '@/api/user'
+import * as roomApi from '@/api/room'
 
 export default defineComponent({
   name: 'HomeView',
 
   setup() {
-    const state: State = reactive({
-      createRoomLoading: false
-    })
+    const loading = ref(false)
 
-    async function createRoomHandler() {
+    async function createRoom() {
       try {
-        state.createRoomLoading = true
-        await auth()
-        const response = await createRoom()
+        loading.value = true
+        await userApi.auth()
+        const response = await roomApi.createRoom()
         router.push({ name: 'ShowRoom', params: { id: response.data.id } })
       } catch (err) {
-        state.createRoomLoading = false
+        loading.value = false
         throw err
       }
     }
 
-    return { state, createRoomHandler }
+    return { loading, createRoom }
   }
 })
 </script>

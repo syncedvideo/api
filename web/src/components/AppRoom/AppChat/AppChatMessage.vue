@@ -1,7 +1,7 @@
 <template>
   <div>
-    <div class="font-semibold" :style="{ color: message.user.chatColor }">
-      <span v-if="message.user.username">{{ message.user.username }}</span>
+    <div class="font-semibold" :style="{ color: message.user.color }">
+      <span v-if="message.user.name">{{ message.user.name }}</span>
       <span v-else>{{ message.user.id }}</span>
     </div>
     <div>{{ message.text }}</div>

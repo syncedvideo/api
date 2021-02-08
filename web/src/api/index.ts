@@ -26,8 +26,23 @@ export interface WebSocketMessage<T = WebSocketMessageType, D = any> {
   d: D
 }
 
-export interface ChatMessage {
+export interface ChatMessageDto {
   id: string
   text: string
   user: UserDto
+}
+
+export interface VideoDto {
+  id: string
+  provider: number
+  providerId: string
+  title: string
+  author: string
+  thumbnail: string
+  statistics: {
+    views: number
+    likes: number
+    dislikes: number
+    lengthInSeconds: number
+  }
 }

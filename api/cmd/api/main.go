@@ -25,6 +25,7 @@ var (
 	apiPostgresPassword = os.Getenv("API_POSTGRES_PASSWORD")
 	apiRedisHost        = os.Getenv("API_REDIS_HOST")
 	apiRedisPort        = os.Getenv("API_REDIS_PORT")
+	ytAPIKey            = os.Getenv("YOUTUBE_API_KEY")
 )
 
 func main() {
@@ -55,7 +56,7 @@ func main() {
 	router := chi.NewRouter()
 	router.Use(middleware.CorsMiddleware)
 	handler.RegisterUserHandler(router)
-	handler.RegisterRoomHandler(router)
+	handler.RegisterRoomHandler(router, ytAPIKey)
 
 	// run http server
 	log.Printf("http server listening on port %s\n", apiHTTPPort)

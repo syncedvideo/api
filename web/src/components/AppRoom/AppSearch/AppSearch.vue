@@ -25,8 +25,8 @@
             class="z-10 absolute left-4 w-6 h-6 pointer-events-none text-primary-500"
           />
           <input
-            ref="searchInput"
-            v-model.trim="search"
+            ref="queryInputElem"
+            v-model.trim="query"
             @keydown.enter="searchHandler"
             class="block w-full leading-none py-4 px-5 pl-14 bg-transparent outline-none text-lg disabled:opacity-50 bg-gray-700 text-primary-500"
             placeholder="Search YouTube"
@@ -39,45 +39,43 @@
             class="animate-spin z-10 absolute right-4 w-6 h-6 pointer-events-none text-primary-500"
           />
         </div>
-
-        <div v-if="videoSearch" class="overflow-auto px-5 mt-5">
-          <app-search-item
-            v-for="video of videoSearch.videos"
-            :key="video.id"
-            :video="video"
-            class="mb-5"
-          />
-        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, nextTick, Ref, ref, watch } from 'vue'
-import { search as searchApi, VideoSearchResponseDto } from '@/api'
-import AppSearchItem from './AppSearchItem.vue'
+import { defineComponent, nextTick, PropType, Ref, ref, watch } from 'vue'
 import AppIcon from '@/components/AppIcon'
 import { mdiVideoPlus, mdiLoading, mdiMagnify } from '@mdi/js'
+import * as api from '@/api'
+import * as roomApi from '@/api/room'
 
 export default defineComponent({
-  components: { AppSearchItem, AppIcon },
+  components: { AppIcon },
 
   name: 'AppSearch',
 
-  setup() {
+  props: {
+    room: {
+      type: Object as PropType<api.RoomDto>,
+      required: true
+    }
+  },
+
+  setup(props) {
     const showSearch = ref(false)
-    const search = ref('')
-    const searchInput: Ref<null | HTMLInputElement> = ref(null)
-    const videoSearch: Ref<VideoSearchResponseDto | undefined> = ref(undefined)
+    const query = ref('')
+    const queryInputElem: Ref<null | HTMLInputElement> = ref(null)
+    const videoSearch: Ref<undefined> = ref(undefined)
     const searchLoading = ref(false)
 
     function openSearch() {
-      search.value = ''
+      query.value = ''
       showSearch.value = true
       nextTick(() => {
-        if (searchInput.value) {
-          searchInput.value.focus()
+        if (queryInputElem.value) {
+          queryInputElem.value.focus()
         }
       })
     }
@@ -89,15 +87,19 @@ export default defineComponent({
     }
 
     async function searchHandler() {
-      if (
-        search.value &&
-        videoSearch.value?.query !== search.value &&
-        !searchLoading.value
-      ) {
-        searchLoading.value = true
-        const response = await searchApi(search.value)
-        videoSearch.value = response.data
-        searchLoading.value = false
+      if (query.value && !searchLoading.value) {
+        try {
+          searchLoading.value = true
+          const response = await roomApi.getVideoInfo(
+            props.room.id,
+            query.value
+          )
+          console.log(response.data)
+        } catch (err) {
+          console.error(err)
+        } finally {
+          searchLoading.value = false
+        }
       }
     }
 
@@ -114,11 +116,11 @@ export default defineComponent({
     })
 
     return {
-      searchInput,
+      queryInputElem,
       openSearch,
       closeSearch,
       showSearch,
-      search,
+      query,
       videoSearch,
       searchLoading,
       searchHandler,

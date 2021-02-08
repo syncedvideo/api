@@ -16,10 +16,11 @@
 </template>
 
 <script lang="ts">
-import { ChatMessageDto, ConnectionMap, UserDto } from '@/api'
-import { computed, ComputedRef, defineComponent, ref } from 'vue'
+import { ChatMessageDto } from '@/api'
+import { computed, ComputedRef, defineComponent, ref, watch } from 'vue'
 import AppChatMessage from './AppChatMessage.vue'
-import * as room from '../'
+import * as roomApi from '@/api/room'
+import { state } from '..'
 
 export default defineComponent({
   name: 'Chat',
@@ -30,24 +31,33 @@ export default defineComponent({
 
   setup() {
     const messages: ComputedRef<ChatMessageDto[]> = computed(() => {
-      return room.state.value.data.chat.messages
+      return state.chatMessages
     })
 
-    const connections: ComputedRef<ConnectionMap> = computed(() => {
-      return room.state.value.data.connectionHub.connections
+    const connections: ComputedRef<undefined> = computed(() => {
+      return undefined
+      // return room.state.value.data.connectionHub.connections
     })
 
-    const currentUser: ComputedRef<UserDto> = computed(() => {
-      return room.state.value.user
+    const currentUser: ComputedRef<undefined> = computed(() => {
+      // return room.state.value.user
+      return undefined
     })
 
     const newMessage = ref('')
     function messageHandler() {
-      if (newMessage.value) {
-        room.sendChatMessage(newMessage.value)
+      if (state.room && newMessage.value) {
+        roomApi.sendChatMessage(state.room.id, newMessage.value)
         newMessage.value = ''
       }
     }
+
+    watch(
+      () => messages,
+      () => {
+        console.log('scroll down')
+      }
+    )
 
     return {
       messages,

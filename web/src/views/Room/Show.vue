@@ -1,19 +1,15 @@
 <template>
-  <div>
-    <app-room v-model="state.room" />
+  <div v-if="!loading && room">
+    <app-room v-model="room" />
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, reactive } from 'vue'
+import { defineComponent, onMounted, Ref, ref } from 'vue'
 import AppRoom from '@/components/AppRoom'
-import * as api from '@/api'
+import * as roomApi from '@/api/room'
 import { useRoute } from 'vue-router'
-
-interface RoomState {
-  loading: boolean
-  room?: api.RoomDto
-}
+import { RoomDto } from '@/api'
 
 export default defineComponent({
   name: 'RoomView',
@@ -23,29 +19,31 @@ export default defineComponent({
   },
 
   setup() {
-    const state: RoomState = reactive({ loading: true, room: undefined })
-    async function getRoom() {
+    const room: Ref<RoomDto | undefined> = ref(undefined)
+    const loading = ref(false)
+
+    async function loadRoom() {
       const route = useRoute()
       const roomId = route.params.id.toString()
       if (!roomId) {
         return
       }
       try {
-        state.loading = true
-        const res = await api.getRoom(roomId)
-        state.room = res.data
+        loading.value = true
+        const res = await roomApi.getRoom(roomId)
+        room.value = res.data
       } catch (error) {
         console.log(error)
       } finally {
-        state.loading = false
+        loading.value = false
       }
     }
 
     onMounted(() => {
-      getRoom()
+      loadRoom()
     })
 
-    return { state }
+    return { loading, room }
   }
 })
 </script>

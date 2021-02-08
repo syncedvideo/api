@@ -23,6 +23,7 @@ services:
       - API_POSTGRES_PASSWORD=${API_POSTGRES_PASSWORD}
       - API_REDIS_HOST=${API_REDIS_HOST}
       - API_REDIS_PORT=${API_REDIS_PORT}
+      - YOUTUBE_API_KEY=${YOUTUBE_API_KEY}
     command: sleep infinity
 
   web:

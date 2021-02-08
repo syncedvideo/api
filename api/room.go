@@ -2,7 +2,6 @@ package syncedvideo
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"time"
@@ -60,28 +59,9 @@ func (r *Room) Run(user *User) {
 	}
 }
 
-const (
-	WebSocketMessageJoin      = 1000
-	WebSocketMessageLeave     = 1001
-	WebSocketMessageChat      = 2000
-	WebSocketMessageSyncUsers = 3000
-)
-
-type WebSocketMessage struct {
-	T int         `json:"t"`
-	D interface{} `json:"d"`
-}
-
 func (r *Room) Publish(msgType int, msgData interface{}) error {
-	msg := WebSocketMessage{
-		T: msgType,
-		D: msgData,
-	}
-	b, err := json.Marshal(msg)
-	if err != nil {
-		return err
-	}
-	Config.Redis.Publish(context.Background(), r.ID.String(), b)
+	msg := NewWebSocketMessage(msgType, msgData)
+	Config.Redis.Publish(context.Background(), r.ID.String(), msg)
 	log.Printf("published: %v\n", msg)
 	return nil
 }

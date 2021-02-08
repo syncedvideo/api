@@ -27,7 +27,7 @@
           placeholder="Change username"
         />
       </div>
-      <div>
+      <!-- <div>
         <div>Connected users</div>
         <ul>
           <li
@@ -41,15 +41,13 @@
             :style="{ color: connection.user.chatColor }"
           ></li>
         </ul>
-      </div>
+      </div> -->
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { ConnectionMap, UserDto } from '@/api'
-import { computed, ComputedRef, defineComponent, ref } from 'vue'
-import * as room from '../'
+import { defineComponent, ref } from 'vue'
 
 export default defineComponent({
   name: 'AppRoomSettings',
@@ -57,34 +55,34 @@ export default defineComponent({
   setup() {
     const show = ref(false)
 
-    const connections: ComputedRef<ConnectionMap> = computed(() => {
-      return room.state.value.data.connectionHub.connections
-    })
+    // const connections: ComputedRef<ConnectionMap> = computed(() => {
+    //   return room.state.value.data.connectionHub.connections
+    // })
 
-    const currentUser: ComputedRef<UserDto> = computed(() => {
-      return room.state.value.user
-    })
+    // const currentUser: ComputedRef<UserDto> = computed(() => {
+    //   return room.state.value.user
+    // })
 
     const newUsername = ref('')
     function usernameHandler() {
-      if (newUsername.value) {
-        room.sendClientUsername(newUsername.value)
-        newUsername.value = ''
-      }
+      // if (newUsername.value) {
+      //   room.sendClientUsername(newUsername.value)
+      //   newUsername.value = ''
+      // }
     }
 
     const newColor = ref('')
     function colorHandler() {
-      if (newColor.value) {
-        room.sendClientColor(newColor.value)
-        newColor.value = ''
-      }
+      // if (newColor.value) {
+      //   room.sendClientColor(newColor.value)
+      //   newColor.value = ''
+      // }
     }
 
     return {
       show,
-      connections,
-      currentUser,
+      // connections,
+      // currentUser,
       newUsername,
       usernameHandler,
       newColor,

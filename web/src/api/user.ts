@@ -3,5 +3,5 @@ import { AxiosPromise } from 'axios'
 import client from './client'
 
 export function auth(): AxiosPromise<UserDto> {
-  return client.post('/user/auth', undefined, { withCredentials: true })
+  return client.post('/user/auth')
 }

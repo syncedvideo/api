@@ -1,99 +1,99 @@
 package youtube
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
-	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
-	"strconv"
 	"time"
+
+	"github.com/go-redis/redis/v8"
+	"google.golang.org/api/googleapi/transport"
+	yt "google.golang.org/api/youtube/v3"
 )
 
-type VideoInfo struct {
-	ID              string `json:"id"`
-	Title           string `json:"title"`
-	LengthInSeconds int    `json:"lengthInSeconds"`
-	Thumbnail       string `json:"thumbnail"`
-	ViewCount       int    `json:"viewCount"`
-	Author          string `json:"author"`
+var ErrNoResults = errors.New("No results")
+
+type YouTube struct {
+	Service *yt.Service
 }
 
-type playerResponseData struct {
-	VideoDetails struct {
-		VideoID         string `json:"videoId"`
-		Title           string `json:"title"`
-		LengthInSeconds string `json:"lengthSeconds"`
-		Thumbnail       struct {
-			Thumbnails []struct {
-				URL    string `json:"url"`
-				Width  int    `json:"width"`
-				Height int    `json:"height"`
-			} `json:"thumbnails"`
-		} `json:"thumbnail"`
-		ViewCount string `json:"viewCount"`
-		Author    string `json:"author"`
-	} `json:"videoDetails"`
-}
-
-// GetVideoInfo downloads YT get_video_info endpoint
-func GetVideoInfo(videoID string) (*VideoInfo, error) {
-	u, err := url.Parse(fmt.Sprintf("https://youtube.com/get_video_info?video_id=%s", videoID))
-	if err != nil {
-		return nil, err
-	}
-
+func New(apiKey string) *YouTube {
 	client := &http.Client{
-		Timeout: time.Second * 5,
+		Transport: &transport.APIKey{Key: apiKey},
+		Timeout:   time.Second * 5,
 	}
-	resp, err := client.Get(u.String())
+	service, _ := yt.New(client)
+	return &YouTube{Service: service}
+}
+
+type Video struct {
+	ID             string                  `json:"id"`
+	Snippet        *yt.VideoSnippet        `json:"snippet"`
+	ContentDetails *yt.VideoContentDetails `json:"contentDetails"`
+	Statistics     *yt.VideoStatistics     `json:"statistics"`
+}
+
+// MarshalBinary: Implementation of encoding.BinaryMarshaler interface
+func (v *Video) MarshalBinary() (data []byte, err error) {
+	return json.Marshal(v)
+}
+
+func (yt YouTube) GetVideo(videoURL string) (Video, error) {
+	videoID := ExtractVideoID(videoURL)
+	if videoID == "" {
+		return Video{}, errors.New("videoID is empty")
+	}
+
+	req := yt.Service.Videos.List([]string{"id", "snippet", "contentDetails", "statistics"}).Id(videoID)
+	resp, err := req.Do()
 	if err != nil {
-		return nil, err
+		return Video{}, fmt.Errorf("Do failed: %w\n", err)
 	}
-	defer resp.Body.Close()
-
-	bodyBytes, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
+	if len(resp.Items) == 0 {
+		return Video{}, ErrNoResults
 	}
 
-	bodyString := string(bodyBytes)
-	values, err := url.ParseQuery(bodyString)
-	if err != nil {
-		return nil, err
-	}
-
-	playerResponse := values.Get("player_response")
-	var prData playerResponseData
-	err = json.Unmarshal([]byte(playerResponse), &prData)
-	if err != nil {
-		return nil, err
-	}
-
-	lengthInSeconds, err := strconv.Atoi(prData.VideoDetails.LengthInSeconds)
-	if err != nil {
-		return nil, err
-	}
-
-	viewCount, err := strconv.Atoi(prData.VideoDetails.ViewCount)
-	if err != nil {
-		return nil, err
-	}
-
-	thumbnail := ""
-	for _, t := range prData.VideoDetails.Thumbnail.Thumbnails {
-		if t.Height >= 100 {
-			thumbnail = t.URL
-			break
-		}
-	}
-
-	return &VideoInfo{
-		ID:              prData.VideoDetails.VideoID,
-		Title:           prData.VideoDetails.Title,
-		LengthInSeconds: lengthInSeconds,
-		Thumbnail:       thumbnail,
-		ViewCount:       viewCount,
-		Author:          prData.VideoDetails.Author,
+	return Video{
+		ID:             resp.Items[0].Id,
+		Snippet:        resp.Items[0].Snippet,
+		ContentDetails: resp.Items[0].ContentDetails,
+		Statistics:     resp.Items[0].Statistics,
 	}, nil
+}
+
+func ExtractVideoID(videoURL string) string {
+	url, _ := url.Parse(videoURL)
+	if url.Host == "" {
+		return videoURL
+	}
+	return url.Query().Get("v")
+}
+
+func cacheKey(videoID string) string {
+	return "video." + videoID
+}
+
+func GetVideoFromCache(r *redis.Client, videoID string) (Video, error) {
+	res, err := r.Get(context.Background(), cacheKey(videoID)).Result()
+	if err == redis.Nil {
+		return Video{}, redis.Nil
+	}
+	if err != nil {
+		return Video{}, fmt.Errorf("Redis Get failed: %w\n", err)
+	}
+	video := Video{}
+	err = json.Unmarshal([]byte(res), &video)
+	if err != nil {
+		return Video{}, fmt.Errorf("Unmarshal failed: %w\n", err)
+	}
+	log.Printf("got video from cache: %v\n", video)
+	return video, nil
+}
+
+func CacheVideo(r *redis.Client, video Video) error {
+	return r.Set(context.Background(), cacheKey(video.ID), video, 6*time.Hour).Err()
 }

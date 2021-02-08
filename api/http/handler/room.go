@@ -7,18 +7,22 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi"
+	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"github.com/syncedvideo/syncedvideo"
 	"github.com/syncedvideo/syncedvideo/http/middleware"
 	"github.com/syncedvideo/syncedvideo/http/request"
 	"github.com/syncedvideo/syncedvideo/http/response"
+	"github.com/syncedvideo/syncedvideo/youtube"
 )
 
-type roomHandler struct{}
+type roomHandler struct {
+	YouTubeAPIKey string
+}
 
-func RegisterRoomHandler(r chi.Router) {
-	roomHandler := newRoomHandler()
+func RegisterRoomHandler(r chi.Router, ytAPIKey string) {
+	roomHandler := newRoomHandler(ytAPIKey)
 	r.Route("/room", func(r chi.Router) {
 		r.Use(middleware.UserMiddleware)
 		r.Post("/", roomHandler.Create)
@@ -28,12 +32,13 @@ func RegisterRoomHandler(r chi.Router) {
 			r.Put("/", roomHandler.Update)
 			r.HandleFunc("/websocket", roomHandler.WebSocket)
 			r.Post("/chat", roomHandler.Chat)
+			r.Get("/video-info", roomHandler.VideoInfo)
 		})
 	})
 }
 
-func newRoomHandler() *roomHandler {
-	return &roomHandler{}
+func newRoomHandler(ytAPIKey string) *roomHandler {
+	return &roomHandler{YouTubeAPIKey: ytAPIKey}
 }
 
 func (h *roomHandler) Create(w http.ResponseWriter, r *http.Request) {
@@ -107,10 +112,59 @@ func (h *roomHandler) Chat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if data.Message == "" {
-		response.WithError(w, "message is required", http.StatusBadRequest)
+		response.WithError(w, "missing message", http.StatusBadRequest)
 		return
 	}
 	chatMessage := syncedvideo.NewChatMessage(request.GetUserCtx(r), data.Message)
 	room := request.GetRoomCtx(r)
 	room.Publish(syncedvideo.WebSocketMessageChat, chatMessage)
+}
+
+func (h *roomHandler) VideoInfo(w http.ResponseWriter, r *http.Request) {
+	videoURL := r.URL.Query().Get("url")
+	if videoURL == "" {
+		response.WithError(w, "missing url query param", http.StatusBadRequest)
+		return
+	}
+
+	videoID := youtube.ExtractVideoID(videoURL)
+	if videoID == "" {
+		response.WithError(w, "missing video ID", http.StatusBadRequest)
+		return
+	}
+
+	// try to get video from cache
+	video, err := youtube.GetVideoFromCache(syncedvideo.Config.Redis, videoID)
+	if err != nil && err != redis.Nil {
+		log.Printf("GetVideoFromCache failed: %v\n", err)
+		response.WithError(w, "something went wrong", http.StatusInternalServerError)
+		return
+	}
+	if video.ID != "" {
+		response.WithJSON(w, syncedvideo.NewVideo(video), http.StatusOK)
+		return
+	}
+
+	// try to get video from YouTube API
+	client := youtube.New(h.YouTubeAPIKey)
+	video, err = client.GetVideo(videoID)
+	if err != nil && err != youtube.ErrNoResults {
+		log.Printf("GetVideo failed: %v\n", err)
+		response.WithError(w, "something went wrong", http.StatusInternalServerError)
+		return
+	}
+
+	// add video to cache
+	err = youtube.CacheVideo(syncedvideo.Config.Redis, video)
+	if err != nil {
+		log.Printf("CacheVideo failed: %v\n", err)
+		response.WithError(w, "something went wrong", http.StatusInternalServerError)
+		return
+	}
+
+	if err == youtube.ErrNoResults {
+		response.WithJSON(w, nil, http.StatusOK)
+		return
+	}
+	response.WithJSON(w, syncedvideo.NewVideo(video), http.StatusOK)
 }
