@@ -1,8 +1,8 @@
 FROM golang:1.15-alpine as dev
 
-RUN apk update && apk upgrade && \
+RUN apk update && \
+    apk upgrade && \
     apk add --no-cache git make docker-cli
-WORKDIR /workspace
 
 RUN go get github.com/uudashr/gopkgs/cmd/gopkgs \
     github.com/ramya-rao-a/go-outline \

@@ -1,0 +1,23 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
+// https://github.com/microsoft/vscode-dev-containers/tree/v0.158.0/containers/alpine
+{
+	"name": "Vue",
+	"build": {
+		"dockerfile": "../Dockerfile",
+		"context": ".."
+	},
+	"forwardPorts": [8080],
+	"settings": {
+		"terminal.integrated.shell.linux": "/bin/sh"
+	},
+	"extensions": [
+		"dbaeumer.vscode-eslint",
+		"bradlc.vscode-tailwindcss",
+		"octref.vetur",
+		"2gua.rainbow-brackets",
+		"esbenp.prettier-vscode",
+		"zignd.html-css-class-completion",
+		"oderwat.indent-rainbow",
+		"msjsdiag.debugger-for-chrome"
+	]
+}

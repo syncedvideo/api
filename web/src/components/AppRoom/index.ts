@@ -62,6 +62,9 @@ export class RoomWebSocket extends WebSocket {
     }
     const msg: api.WebSocketMessage = JSON.parse(ev.data)
     switch (msg.t) {
+      case api.WebSocketMessageType.Ping:
+        console.log('received a PING!')
+        break
       case api.WebSocketMessageType.Join:
         console.log('handle Join')
         break

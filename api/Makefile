@@ -1,5 +1,5 @@
 flyway := \
-	docker run --rm -v $${LOCAL_WORKSPACE_FOLDER}/store/postgres/migrations:/flyway/sql --network syncedvideo_dev \
+	docker run --rm -v $${LOCAL_WORKSPACE_FOLDER}/store/postgres/migrations:/flyway/sql --network api_dev \
 		flyway/flyway \
 		-user=$${API_POSTGRES_USER} \
 		-password=$${API_POSTGRES_PASSWORD} \

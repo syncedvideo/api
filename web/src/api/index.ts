@@ -15,6 +15,7 @@ export interface RoomDto {
 }
 
 export enum WebSocketMessageType {
+  Ping = 0,
   Join = 1000,
   Leave = 1001,
   Chat = 2000,
