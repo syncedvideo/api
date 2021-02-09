@@ -153,6 +153,11 @@ func (h *roomHandler) VideoInfo(w http.ResponseWriter, r *http.Request) {
 		response.WithError(w, "something went wrong", http.StatusInternalServerError)
 		return
 	}
+	if err == youtube.ErrNoResults {
+		log.Printf("no cache key for %v\n", videoID)
+	} else {
+		log.Printf("got video from cache: %v\n", video)
+	}
 
 	// add video to cache
 	err = youtube.CacheVideo(syncedvideo.Config.Redis, video)
@@ -161,8 +166,9 @@ func (h *roomHandler) VideoInfo(w http.ResponseWriter, r *http.Request) {
 		response.WithError(w, "something went wrong", http.StatusInternalServerError)
 		return
 	}
+	log.Printf("added cache key: %v\n", videoID)
 
-	if err == youtube.ErrNoResults {
+	if video.ID == "" {
 		response.WithJSON(w, nil, http.StatusOK)
 		return
 	}

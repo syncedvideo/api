@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
 	"time"
@@ -38,7 +37,7 @@ type Video struct {
 }
 
 // MarshalBinary: Implementation of encoding.BinaryMarshaler interface
-func (v *Video) MarshalBinary() (data []byte, err error) {
+func (v Video) MarshalBinary() (data []byte, err error) {
 	return json.Marshal(v)
 }
 
@@ -90,7 +89,6 @@ func GetVideoFromCache(r *redis.Client, videoID string) (Video, error) {
 	if err != nil {
 		return Video{}, fmt.Errorf("Unmarshal failed: %w\n", err)
 	}
-	log.Printf("got video from cache: %v\n", video)
 	return video, nil
 }
 

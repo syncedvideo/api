@@ -40,7 +40,8 @@ func (r *Room) Run(user *User) {
 	go func() {
 		for {
 			time.Sleep(time.Second * 5)
-			err := user.Connection.WriteMessage(websocket.TextMessage, []byte("ping"))
+			ping, _ := NewWebSocketMessage(WebSocketMessagePing, "ping").MarshalBinary()
+			err := user.Connection.WriteMessage(websocket.TextMessage, ping)
 			if err != nil {
 				break
 			}

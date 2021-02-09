@@ -22,17 +22,14 @@ type Video struct {
 }
 
 type videoStatistics struct {
-	Views             uint64        `json:"views"`
-	Likes             uint64        `json:"likes"`
-	Dislikes          uint64        `json:"dislikes"`
-	DurationInSeconds time.Duration `json:"durationInSeconds"`
+	Views             uint64  `json:"views"`
+	Likes             uint64  `json:"likes"`
+	Dislikes          uint64  `json:"dislikes"`
+	DurationInSeconds float64 `json:"durationInSeconds"`
 }
 
 func NewVideo(ytVideo youtube.Video) Video {
-	d, _ := iso8601.ParseISO8601(ytVideo.ContentDetails.Duration)
-	duration := d.TS
-	duration += d.TM * 60
-	duration += d.TH * (60 * 60)
+	d := parseISO8601(ytVideo.ContentDetails.Duration)
 	video := Video{
 		ID:         uuid.New(),
 		Provider:   VideoProviderYouTube,
@@ -40,12 +37,21 @@ func NewVideo(ytVideo youtube.Video) Video {
 		Title:      ytVideo.Snippet.Title,
 		Author:     ytVideo.Snippet.ChannelTitle,
 		Thumbnail:  ytVideo.Snippet.Thumbnails.Default.Url,
+		Duration:   d,
 	}
 	video.Statistics = videoStatistics{
 		Views:             ytVideo.Statistics.ViewCount,
 		Likes:             ytVideo.Statistics.LikeCount,
 		Dislikes:          ytVideo.Statistics.DislikeCount,
-		DurationInSeconds: time.Duration(duration),
+		DurationInSeconds: video.Duration.Seconds(),
 	}
 	return video
+}
+
+func parseISO8601(from string) time.Duration {
+	d, _ := iso8601.ParseISO8601(from)
+	duration := time.Duration(d.TS) * time.Second
+	duration += time.Duration(d.TM) * time.Minute
+	duration += time.Duration(d.TH) * time.Hour
+	return duration
 }
