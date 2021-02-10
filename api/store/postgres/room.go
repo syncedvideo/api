@@ -99,7 +99,7 @@ func (s *RoomStore) Leave(r *syncedvideo.Room, u *syncedvideo.User) error {
 	return nil
 }
 
-func (s *RoomStore) WithUsers(r *syncedvideo.Room) error {
+func (s *RoomStore) GetUsers(r *syncedvideo.Room) ([]syncedvideo.User, error) {
 	users := []syncedvideo.User{}
 	err := s.db.Select(&users, `
 		SELECT su.* 
@@ -108,6 +108,16 @@ func (s *RoomStore) WithUsers(r *syncedvideo.Room) error {
 		ON sruc.user_id = su.id 
 		WHERE sruc.room_id = $1
 	`, r.ID)
+	if err == sql.ErrNoRows {
+		return nil, sql.ErrNoRows
+	} else if err != nil {
+		return nil, fmt.Errorf("error loading users: %w", err)
+	}
+	return users, nil
+}
+
+func (s *RoomStore) WithUsers(r *syncedvideo.Room) error {
+	users, err := s.GetUsers(r)
 	if err == sql.ErrNoRows {
 		return sql.ErrNoRows
 	} else if err != nil {

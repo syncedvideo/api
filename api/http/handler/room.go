@@ -88,14 +88,6 @@ func (h *roomHandler) WebSocket(w http.ResponseWriter, r *http.Request) {
 	user := request.GetUserCtx(r)
 	user.ConnectionID = uuid.New()
 	user.Connection = conn
-
-	defer func() {
-		user.Connection.Close()
-		syncedvideo.Config.Store.Room().Leave(&room, &user)
-		room.Publish(syncedvideo.WebSocketMessageLeave, user)
-	}()
-	syncedvideo.Config.Store.Room().Join(&room, &user)
-	room.Publish(syncedvideo.WebSocketMessageJoin, user)
 	room.Run(&user)
 }
 

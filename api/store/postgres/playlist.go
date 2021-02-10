@@ -18,7 +18,7 @@ func (s *PlaylistStore) Get(id uuid.UUID) (syncedvideo.PlaylistItem, error) {
 
 func (s *PlaylistStore) All(roomID uuid.UUID) (map[uuid.UUID]syncedvideo.PlaylistItem, error) {
 	rows, err := s.db.Query(`
-		SELECT item.id, item.room_id, item.user_id, vote.id, vote.item_id, vote.user_id 
+		SELECT item.id, item.room_id, item.user_id, vote.id, vote.item_id, vote.user_id
 		FROM sv_playlist_item item
 		LEFT JOIN sv_playlist_item_vote vote
 		ON item.id = vote.item_id

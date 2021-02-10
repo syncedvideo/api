@@ -2,14 +2,16 @@ package handler
 
 import (
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"log"
 	"net/http"
-	"time"
 
 	"github.com/go-chi/chi"
 	"github.com/google/uuid"
 	"github.com/syncedvideo/syncedvideo"
+	"github.com/syncedvideo/syncedvideo/http/middleware"
+	"github.com/syncedvideo/syncedvideo/http/request"
 	"github.com/syncedvideo/syncedvideo/http/response"
 )
 
@@ -18,7 +20,8 @@ type userHandler struct{}
 func RegisterUserHandler(r chi.Router) {
 	userHandler := newUserHandler()
 	r.Route("/user", func(r chi.Router) {
-		r.Post("/auth", userHandler.Auth)
+		r.Use(middleware.UserMiddleware)
+		r.Put("/", userHandler.Update)
 	})
 }
 
@@ -60,37 +63,39 @@ func getUserFromCookie(r *http.Request) (syncedvideo.User, error) {
 	return user, nil
 }
 
-func (h *userHandler) Auth(w http.ResponseWriter, r *http.Request) {
-	user := syncedvideo.User{}
-
-	if hasUserCookie(r) {
-		u, err := getUserFromCookie(r)
-		if err != nil && err != sql.ErrNoRows {
-			log.Printf("error getting user: %v", err)
+func (h *userHandler) Update(w http.ResponseWriter, r *http.Request) {
+	currentUser := request.GetUserCtx(r)
+	updatedUser := syncedvideo.User{}
+	err := json.NewDecoder(r.Body).Decode(&updatedUser)
+	if err != nil {
+		log.Printf("Decode failed: %v", err)
+		response.WithError(w, "something went wrong", http.StatusInternalServerError)
+		return
+	}
+	if currentUser.ID != updatedUser.ID {
+		log.Printf("Update failed: user id %s tried to update user id %s", currentUser.ID, updatedUser.ID)
+		response.WithError(w, "cannot update different user", http.StatusForbidden)
+		return
+	}
+	err = syncedvideo.Config.Store.User().Update(&currentUser)
+	if err != nil {
+		log.Printf("Update failed: %v", err)
+		response.WithError(w, "something went wrong", http.StatusInternalServerError)
+		return
+	}
+	rooms, err := syncedvideo.Config.Store.User().GetCurrentRooms(currentUser.ID)
+	if err != nil && err != sql.ErrNoRows {
+		log.Printf("GetCurrentRooms failed: %v", err)
+		response.WithError(w, "something went wrong", http.StatusInternalServerError)
+		return
+	}
+	for _, room := range rooms {
+		err := room.SyncUsers()
+		if err != nil {
+			log.Printf("SyncUsers failed: %v", err)
 			response.WithError(w, "something went wrong", http.StatusInternalServerError)
 			return
 		}
-		user = u
 	}
-
-	if user.ID == uuid.Nil {
-		user = syncedvideo.NewUser()
-		err := syncedvideo.Config.Store.User().Create(&user)
-		if err != nil {
-			log.Printf("error creating user: %v", err)
-			response.WithError(w, "something went wrong", http.StatusInternalServerError)
-		}
-	}
-
-	http.SetCookie(w, &http.Cookie{
-		Name:     userCookieKey,
-		Value:    user.ID.String(),
-		Path:     "/",
-		HttpOnly: true,
-		SameSite: http.SameSiteLaxMode,
-		Secure:   false,
-		Expires:  time.Now().UTC().Add(24 * time.Hour * 30), // 30 days
-	})
-
-	response.WithJSON(w, user, http.StatusOK)
+	response.WithJSON(w, updatedUser, http.StatusOK)
 }

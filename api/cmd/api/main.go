@@ -55,6 +55,7 @@ func main() {
 	// register http handlers
 	router := chi.NewRouter()
 	router.Use(middleware.CorsMiddleware)
+	handler.RegisterAuthHandler(router)
 	handler.RegisterUserHandler(router)
 	handler.RegisterRoomHandler(router, ytAPIKey)
 

@@ -9,16 +9,20 @@ export default AppRoom
 export interface State {
   room?: api.RoomDto
   connected: boolean
-  ytPlaer?: YouTubePlayer
+  ytPlayer?: YouTubePlayer
   chatMessages: api.ChatMessageDto[]
 }
 
-export const state: State = reactive({
-  room: undefined,
-  connected: false,
-  ytPlaer: undefined,
-  chatMessages: []
-})
+export function createState(): State {
+  return {
+    room: undefined,
+    connected: false,
+    ytPlayer: undefined,
+    chatMessages: []
+  }
+}
+
+export const state: State = reactive(createState())
 
 export function toDurationString(n: number): string {
   const minutes = Math.floor(n / 60)
@@ -38,21 +42,21 @@ export function toDurationString(n: number): string {
 }
 
 export class RoomWebSocket extends WebSocket {
-  roomState: State
+  state: State
 
-  constructor(url: string, roomState: State) {
+  constructor(url: string, state: State) {
     super(url)
-    this.roomState = roomState
+    this.state = state
   }
 
   onopen = (ev: Event) => {
     console.log('open', ev)
-    this.roomState.connected = true
+    this.state.connected = true
   }
 
   onclose = (ev: CloseEvent) => {
     console.log('closed', ev)
-    this.roomState.connected = false
+    this.state.connected = false
   }
 
   onmessage = (ev: MessageEvent) => {
@@ -61,6 +65,9 @@ export class RoomWebSocket extends WebSocket {
       return
     }
     const msg: api.WebSocketMessage = JSON.parse(ev.data)
+    if (msg.t === undefined) {
+      return
+    }
     switch (msg.t) {
       case api.WebSocketMessageType.Ping:
         console.log('received a PING!')
@@ -72,7 +79,7 @@ export class RoomWebSocket extends WebSocket {
         console.log('handle Leave')
         break
       case api.WebSocketMessageType.SyncUsers:
-        console.log('handle SyncUsers')
+        this.handleSyncUsers(msg.d)
         break
       case api.WebSocketMessageType.Chat:
         this.handleChatMessage(msg.d)
@@ -84,7 +91,13 @@ export class RoomWebSocket extends WebSocket {
     console.error('error', ev)
   }
 
+  handleSyncUsers(users: api.UserDto[]) {
+    if (this.state.room) {
+      this.state.room.users = users
+    }
+  }
+
   handleChatMessage(msg: api.ChatMessageDto) {
-    this.roomState.chatMessages.push(msg)
+    this.state.chatMessages.push(msg)
   }
 }

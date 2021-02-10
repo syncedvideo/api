@@ -24,11 +24,21 @@ type Room struct {
 	// unregister chan *User
 }
 
+func (r *Room) Close(user *User) {
+	fmt.Println("defer")
+	user.Connection.Close()
+	Config.Store.Room().Leave(r, user)
+	r.Publish(WebSocketMessageLeave, user)
+	r.SyncUsers()
+}
+
 func (r *Room) Run(user *User) {
+	defer r.Close(user)
+
+	Config.Store.Room().Join(r, user)
+	r.Publish(WebSocketMessageJoin, user)
 	pubsub := Config.Redis.Subscribe(context.Background(), r.ID.String())
-	defer func() {
-		pubsub.Close()
-	}()
+
 	go func() {
 		for msg := range pubsub.Channel() {
 			fmt.Printf("received message: %s\n", msg)
@@ -48,6 +58,8 @@ func (r *Room) Run(user *User) {
 		}
 	}()
 
+	r.SyncUsers()
+
 	// ws connection loop
 	for {
 		_, msg, err := user.Connection.ReadMessage()
@@ -58,6 +70,7 @@ func (r *Room) Run(user *User) {
 		}
 		log.Printf("recieved message: %v\n", msg)
 	}
+
 }
 
 func (r *Room) Publish(msgType int, msgData interface{}) error {
@@ -68,7 +81,15 @@ func (r *Room) Publish(msgType int, msgData interface{}) error {
 }
 
 func (r *Room) SyncUsers() error {
-	return r.Publish(WebSocketMessageSyncUsers, r.Users)
+	users, err := Config.Store.Room().GetUsers(r)
+	if err != nil {
+		return fmt.Errorf("GetUsers failed: %w", err)
+	}
+	err = r.Publish(WebSocketMessageSyncUsers, users)
+	if err != nil {
+		return fmt.Errorf("Publish WebSocketMessageSyncUsers failed: %w", err)
+	}
+	return nil
 }
 
 type PlaylistItem struct {

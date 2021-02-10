@@ -11,6 +11,7 @@ export interface RoomDto {
   name: string
   description: string
   ownerUserId: string
+  currentUser: UserDto
   users: UserDto[]
 }
 

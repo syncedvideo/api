@@ -15,6 +15,7 @@ type UserStore interface {
 	Create(u *User) error
 	Update(u *User) error
 	Delete(userID uuid.UUID) error
+	GetCurrentRooms(userID uuid.UUID) ([]Room, error)
 }
 
 type RoomStore interface {
@@ -24,6 +25,7 @@ type RoomStore interface {
 	Delete(roomID uuid.UUID) error
 	Join(r *Room, u *User) error
 	Leave(r *Room, u *User) error
+	GetUsers(r *Room) ([]User, error)
 	WithUsers(r *Room) error
 }
 
