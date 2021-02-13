@@ -42,6 +42,7 @@ func (h *authHandler) Auth(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Printf("error creating user: %v", err)
 			response.WithError(w, "something went wrong", http.StatusInternalServerError)
+			return
 		}
 	}
 
