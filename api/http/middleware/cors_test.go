@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestCors(t *testing.T) {
+func TestCorsMiddleware(t *testing.T) {
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
