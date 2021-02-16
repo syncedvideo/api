@@ -26,7 +26,6 @@ type RoomStore interface {
 	Join(r *Room, u *User) error
 	Leave(r *Room, u *User) error
 	GetUsers(r *Room) ([]User, error)
-	WithUsers(r *Room) error
 }
 
 type PlaylistStore interface {

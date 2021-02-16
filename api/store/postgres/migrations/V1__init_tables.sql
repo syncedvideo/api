@@ -1,15 +1,15 @@
 CREATE TABLE IF NOT EXISTS sv_user (
     id UUID PRIMARY KEY,
-    name VARCHAR,
-    color VARCHAR,
+    name TEXT,
+    color TEXT,
     is_admin BOOLEAN DEFAULT false
 );
 
 CREATE TABLE IF NOT EXISTS sv_room (
     id UUID PRIMARY KEY,
     owner_user_id UUID REFERENCES sv_user(id),
-    name VARCHAR,
-    description VARCHAR
+    name TEXT,
+    description TEXT
 );
 
 CREATE TABLE IF NOT EXISTS sv_room_user_connection (

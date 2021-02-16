@@ -8,32 +8,40 @@ import (
 )
 
 func TestUserStore(t *testing.T) {
-	id := uuid.New()
+	userID := uuid.New()
 	t.Run("create user", func(t *testing.T) {
-		user := syncedvideo.User{ID: id}
-		err := store.User().Create(&user)
+		user := syncedvideo.User{ID: userID}
+		err := createUser(&user)
 		if err != nil {
-			t.Error(err)
+			t.Errorf("Create failed: %w", err)
 		}
 	})
 	t.Run("get user", func(t *testing.T) {
-		_, err := store.User().Get(id)
+		_, err := store.User().Get(userID)
 		if err != nil {
-			t.Error(err)
+			t.Errorf("Get failed: %w", err)
 		}
 	})
 	t.Run("update user", func(t *testing.T) {
-		user := syncedvideo.User{ID: id}
+		user := syncedvideo.User{ID: userID}
 		user.Name = "TestUser"
 		err := store.User().Update(&user)
 		if err != nil {
-			t.Error(err)
+			t.Errorf("Update failed: %w", err)
 		}
 	})
 	t.Run("delete user", func(t *testing.T) {
-		err := store.User().Delete(id)
+		err := deleteUser(userID)
 		if err != nil {
-			t.Error(err)
+			t.Errorf("Delete failed: %w", err)
 		}
 	})
+}
+
+func createUser(user *syncedvideo.User) error {
+	return store.User().Create(user)
+}
+
+func deleteUser(userID uuid.UUID) error {
+	return store.User().Delete(userID)
 }

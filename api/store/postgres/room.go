@@ -2,7 +2,6 @@ package postgres
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -35,10 +34,11 @@ func (s *RoomStore) Create(r *syncedvideo.Room) error {
 	if r.ID == uuid.Nil {
 		r.ID = uuid.New()
 	}
-	if r.OwnerUserID == uuid.Nil {
-		return errors.New("OwnerUserID is required")
+	var ownerID *string
+	if r.OwnerUserID != uuid.Nil {
+		*ownerID = r.OwnerUserID.String()
 	}
-	err := s.db.Get(r, "INSERT INTO sv_room VALUES ($1, $2, $3, $4) RETURNING *", r.ID, r.OwnerUserID, r.Name, r.Description)
+	err := s.db.Get(r, "INSERT INTO sv_room VALUES ($1, $2, $3, $4) RETURNING *", r.ID, ownerID, r.Name, r.Description)
 	if err == sql.ErrNoRows {
 		return err
 	} else if err != nil {
@@ -48,7 +48,11 @@ func (s *RoomStore) Create(r *syncedvideo.Room) error {
 }
 
 func (s *RoomStore) Update(r *syncedvideo.Room) error {
-	err := s.db.Get(r, "UPDATE sv_room SET name=$1, owner_user_id=$2 WHERE id=$3 RETURNING *", r.Name, r.OwnerUserID, r.ID)
+	var ownerID *string
+	if r.OwnerUserID != uuid.Nil {
+		*ownerID = r.OwnerUserID.String()
+	}
+	err := s.db.Get(r, "UPDATE sv_room SET name=$1, owner_user_id=$2 WHERE id=$3 RETURNING *", r.Name, ownerID, r.ID)
 	if err != nil {
 		return fmt.Errorf("error updating room: %w", err)
 	}
@@ -114,15 +118,4 @@ func (s *RoomStore) GetUsers(r *syncedvideo.Room) ([]syncedvideo.User, error) {
 		return nil, fmt.Errorf("error loading users: %w", err)
 	}
 	return users, nil
-}
-
-func (s *RoomStore) WithUsers(r *syncedvideo.Room) error {
-	users, err := s.GetUsers(r)
-	if err == sql.ErrNoRows {
-		return sql.ErrNoRows
-	} else if err != nil {
-		return fmt.Errorf("error loading users: %w", err)
-	}
-	r.Users = users
-	return nil
 }

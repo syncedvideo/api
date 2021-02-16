@@ -3,6 +3,7 @@ package postgres
 import (
 	"flag"
 	"fmt"
+	"log"
 	"os"
 	"testing"
 
@@ -24,7 +25,7 @@ func TestMain(m *testing.M) {
 	postgresDsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s sslmode=disable", apiPostgresHost, apiPostgresUser, apiPostgresPassword, apiPostgresDB)
 	s, err := NewStore(postgresDsn)
 	if err != nil {
-		panic(err)
+		log.Fatalf("NewStore failed: %v", err)
 	}
 	store = s
 	os.Exit(m.Run())

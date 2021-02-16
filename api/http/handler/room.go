@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -55,10 +54,13 @@ func (h *roomHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 func (h *roomHandler) Get(w http.ResponseWriter, r *http.Request) {
 	room := request.GetRoomCtx(r)
-	err := syncedvideo.Config.Store.Room().WithUsers(&room)
+	users, err := syncedvideo.Config.Store.Room().GetUsers(&room)
 	if err != nil {
-		fmt.Println(err)
+		log.Printf("GetUsers failed: %v", err)
+		response.WithError(w, "something went wrong", http.StatusInternalServerError)
+		return
 	}
+	room.Users = users
 	response.WithJSON(w, room, http.StatusOK)
 }
 
