@@ -12,17 +12,17 @@ services:
     networks: 
       - dev
     ports:
-      - ${API_HTTP_PORT}:${API_HTTP_PORT}
+      - ${HTTP_PORT}:${HTTP_PORT}
       - 2345:2345
     environment:
-      - API_HTTP_PORT=${API_HTTP_PORT}
-      - API_POSTGRES_HOST=${API_POSTGRES_HOST}
-      - API_POSTGRES_PORT=${API_POSTGRES_PORT}
-      - API_POSTGRES_DB=${API_POSTGRES_DB}
-      - API_POSTGRES_USER=${API_POSTGRES_USER}
-      - API_POSTGRES_PASSWORD=${API_POSTGRES_PASSWORD}
-      - API_REDIS_HOST=${API_REDIS_HOST}
-      - API_REDIS_PORT=${API_REDIS_PORT}
+      - HTTP_PORT=${HTTP_PORT}
+      - POSTGRES_HOST=${POSTGRES_HOST}
+      - POSTGRES_PORT=${POSTGRES_PORT}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
       - YOUTUBE_API_KEY=${YOUTUBE_API_KEY}
     command: sleep infinity
 
@@ -33,9 +33,9 @@ services:
     ports:
       - 5432:5432
     environment:
-      - POSTGRES_DB=${API_POSTGRES_DB}
-      - POSTGRES_USER=${API_POSTGRES_USER}
-      - POSTGRES_PASSWORD=${API_POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     volumes:
       - postgres-data:/var/lib/postgresql/data
 

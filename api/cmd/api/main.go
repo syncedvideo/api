@@ -17,14 +17,14 @@ import (
 )
 
 var (
-	apiHTTPPort         = os.Getenv("API_HTTP_PORT")
-	apiPostgresHost     = os.Getenv("API_POSTGRES_HOST")
-	apiPostgresPort     = os.Getenv("API_POSTGRES_PORT")
-	apiPostgresDB       = os.Getenv("API_POSTGRES_DB")
-	apiPostgresUser     = os.Getenv("API_POSTGRES_USER")
-	apiPostgresPassword = os.Getenv("API_POSTGRES_PASSWORD")
-	apiRedisHost        = os.Getenv("API_REDIS_HOST")
-	apiRedisPort        = os.Getenv("API_REDIS_PORT")
+	apiHTTPPort         = os.Getenv("HTTP_PORT")
+	apiPostgresHost     = os.Getenv("POSTGRES_HOST")
+	apiPostgresPort     = os.Getenv("POSTGRES_PORT")
+	apiPostgresDB       = os.Getenv("POSTGRES_DB")
+	apiPostgresUser     = os.Getenv("POSTGRES_USER")
+	apiPostgresPassword = os.Getenv("POSTGRES_PASSWORD")
+	apiRedisHost        = os.Getenv("REDIS_HOST")
+	apiRedisPort        = os.Getenv("REDIS_PORT")
 	ytAPIKey            = os.Getenv("YOUTUBE_API_KEY")
 )
 

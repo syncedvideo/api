@@ -10,11 +10,11 @@ import (
 )
 
 var (
-	apiPostgresHost     = os.Getenv("API_POSTGRES_HOST")
-	apiPostgresPort     = os.Getenv("API_POSTGRES_PORT")
-	apiPostgresDB       = os.Getenv("API_POSTGRES_DB")
-	apiPostgresUser     = os.Getenv("API_POSTGRES_USER")
-	apiPostgresPassword = os.Getenv("API_POSTGRES_PASSWORD")
+	apiPostgresHost     = os.Getenv("POSTGRES_HOST")
+	apiPostgresPort     = os.Getenv("POSTGRES_PORT")
+	apiPostgresDB       = os.Getenv("POSTGRES_DB")
+	apiPostgresUser     = os.Getenv("POSTGRES_USER")
+	apiPostgresPassword = os.Getenv("POSTGRES_PASSWORD")
 )
 
 var store syncedvideo.Store
