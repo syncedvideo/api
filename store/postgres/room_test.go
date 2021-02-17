@@ -7,14 +7,14 @@ import (
 )
 
 func TestRoomStore(t *testing.T) {
-	testRoom := syncedvideo.Room{}
+	testUser := syncedvideo.User{}
+	createUser(&testUser)
+
+	testRoom := syncedvideo.Room{OwnerUserID: testUser.ID}
 	err := createRoom(&testRoom)
 	if err != nil {
 		t.Errorf("create room failed: %w", err)
 	}
-
-	testUser := syncedvideo.User{}
-	createUser(&testUser)
 
 	t.Run("get room", func(t *testing.T) {
 		room, err := store.Room().Get(testRoom.ID)
