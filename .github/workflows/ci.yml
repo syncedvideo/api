@@ -10,13 +10,13 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
+
     env:
       POSTGRES_HOST: 127.0.0.1
       POSTGRES_PORT: 5432
       POSTGRES_USER: default
       POSTGRES_PASSWORD: secret
       POSTGRES_DB: default
-      LOCAL_WORKSPACE_FOLDER: ${{ env.GITHUB_WORKSPACE }}
 
     services:
       postgres:
@@ -44,7 +44,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Migrate
-        run: make migrate
+        run: LOCAL_WORKSPACE_FOLDER=${{env.GITHUB_WORKSPACE}} make migrate
 
       - name: Test
         run: make test
