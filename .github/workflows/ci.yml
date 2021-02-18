@@ -7,7 +7,7 @@ on:
     branches: [ master ]
 
 env:
-  POSTGRES_HOST: postgres
+  POSTGRES_HOST: 127.0.0.1
   POSTGRES_PORT: 5432
   POSTGRES_USER: default
   POSTGRES_PASSWORD: secret
