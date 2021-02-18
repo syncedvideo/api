@@ -7,7 +7,7 @@ services:
       dockerfile: ./Dockerfile
       target: dev
     volumes:
-      - ..:/workspace:cached 
+      - .:/workspace:cached 
       - /var/run/docker.sock:/var/run/docker.sock
     networks: 
       - dev

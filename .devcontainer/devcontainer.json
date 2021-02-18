@@ -4,7 +4,7 @@
 		"../docker-compose.yml"
 	],
 	"service": "api",
-	"workspaceFolder": "/workspace/api",
+	"workspaceFolder": "/workspace",
 	"remoteEnv": {
 		"LOCAL_WORKSPACE_FOLDER": "${localWorkspaceFolder}"
 	},
