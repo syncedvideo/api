@@ -16,7 +16,7 @@ jobs:
       POSTGRES_USER: default
       POSTGRES_PASSWORD: secret
       POSTGRES_DB: default
-      LOCAL_WORKSPACE_FOLDER: $PWD
+      LOCAL_WORKSPACE_FOLDER: ${GITHUB_WORKSPACE}
 
     services:
       postgres:
