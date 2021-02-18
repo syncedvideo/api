@@ -16,17 +16,17 @@ jobs:
       POSTGRES_USER: default
       POSTGRES_PASSWORD: secret
       POSTGRES_DB: default
-      LOCAL_WORKSPACE_FOLDER: ${GITHUB_WORKSPACE}
+      LOCAL_WORKSPACE_FOLDER: ${{env.GITHUB_WORKSPACE}}
 
     services:
       postgres:
         image: postgres:13-alpine
         env:
-          POSTGRES_USER: default
-          POSTGRES_PASSWORD: secret
-          POSTGRES_DB: default
+          POSTGRES_USER: ${{env.POSTGRES_USER}}
+          POSTGRES_PASSWORD: ${{env.POSTGRES_PASSWORD}}
+          POSTGRES_DB: ${{env.POSTGRES_DB}}
         ports:
-          - 5432:5432
+          - ${{env.POSTGRES_PORT}}:5432
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
