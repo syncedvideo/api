@@ -45,7 +45,7 @@ jobs:
 
       - name: Migrate
         run: |
-          docker network create -d postgres syncedvideo_dev
+          docker network create -d bridge syncedvideo_dev
           LOCAL_WORKSPACE_FOLDER=${GITHUB_WORKSPACE} make migrate
 
       - name: Test
