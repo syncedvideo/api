@@ -22,11 +22,11 @@ jobs:
       postgres:
         image: postgres:13-alpine
         env:
-          POSTGRES_USER: ${{ env.POSTGRES_USER }}
-          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
-          POSTGRES_DB: ${{ env.POSTGRES_DB }}
+          POSTGRES_USER: ${POSTGRES_USER}
+          POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+          POSTGRES_DB: ${POSTGRES_DB}
         ports:
-          - ${{ env.POSTGRES_PORT }}:5432
+          - ${POSTGRES_PORT}:5432
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -44,7 +44,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Migrate
-        run: LOCAL_WORKSPACE_FOLDER=${{env.GITHUB_WORKSPACE}} make migrate
+        run: LOCAL_WORKSPACE_FOLDER=${GITHUB_WORKSPACE} make migrate
 
       - name: Test
         run: make test
