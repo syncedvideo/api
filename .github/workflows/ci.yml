@@ -6,17 +6,17 @@ on:
   pull_request:
     branches: [ master ]
 
+env:
+  POSTGRES_HOST: 127.0.0.1
+  POSTGRES_PORT: 5432
+  POSTGRES_USER: default
+  POSTGRES_PASSWORD: secret
+  POSTGRES_DB: default
+
 jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
-
-    env:
-      POSTGRES_HOST: 127.0.0.1
-      POSTGRES_PORT: 5432
-      POSTGRES_USER: default
-      POSTGRES_PASSWORD: secret
-      POSTGRES_DB: default
 
     services:
       postgres:
