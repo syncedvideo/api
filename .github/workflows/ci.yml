@@ -33,7 +33,7 @@ jobs:
       - name: Run migrations
         shell: 'script -q -e -c "bash {0}"'
         run: |
-          docker-compose exec api make migrate
+          docker-compose exec -e LOCAL_WORKSPACE_FOLDER=${GITHUB_WORKSPACE} api make migrate
       
       - name: Run tests
         shell: 'script -q -e -c "bash {0}"'
