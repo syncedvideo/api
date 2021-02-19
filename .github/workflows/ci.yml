@@ -22,7 +22,17 @@ jobs:
     name: Test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - run: docker-compose up -d
-      - run: docker exec -it api -e LOCAL_WORKSPACE_FOLDER=${GITHUB_WORKSPACE} make migrate
-      - run: docker exec -it api make test
+      - name: Checkout
+        uses: actions/checkout@v2
+      
+      - name: Start containers
+        run: |
+          docker-compose up -d
+          docker-compose ps
+
+      - name: Run migrations
+        run: |
+          docker exec -it syncedvideo_api -e LOCAL_WORKSPACE_FOLDER=${GITHUB_WORKSPACE} make migrate
+      
+      - name: Run tests
+        run: docker exec -it api make test
