@@ -14,8 +14,8 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      POSTGRES_HOST: localhost
-      POSTGRES_PORT: postgres
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
       POSTGRES_USER: default
       POSTGRES_PASSWORD: secret
       POSTGRES_DB: default
