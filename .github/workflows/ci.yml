@@ -32,7 +32,7 @@ jobs:
 
       - name: Run migrations
         run: |
-          docker-compose exec api -e LOCAL_WORKSPACE_FOLDER=${GITHUB_WORKSPACE} make migrate
+          docker-compose exec api make migrate
       
       - name: Run tests
         run: docker-compose exec api make test
