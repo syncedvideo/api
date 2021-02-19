@@ -6,17 +6,20 @@ on:
   pull_request:
     branches: [ master ]
 
-env:
-  POSTGRES_HOST: localhost
-  POSTGRES_PORT: postgres
-  POSTGRES_USER: default
-  POSTGRES_PASSWORD: secret
-  POSTGRES_DB: default
+
 
 jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
+
+    env:
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: postgres
+      POSTGRES_USER: default
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: default
+
     steps:
       - uses: actions/checkout@v2
       - run: docker-compose up -d
