@@ -6,6 +6,7 @@ services:
       context: .
       dockerfile: ./Dockerfile
       target: dev
+    working_dir: /workspace
     volumes:
       - .:/workspace:cached 
       - /var/run/docker.sock:/var/run/docker.sock
