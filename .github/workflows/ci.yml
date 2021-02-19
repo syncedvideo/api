@@ -31,10 +31,10 @@ jobs:
           docker-compose ps
 
       - name: Run migrations
-        shell: 'script -q -e -c "bash {0}"'
+        shell: 'script -q -e -c "bash {0}"' # tty workaround
         run: |
           docker-compose exec -e LOCAL_WORKSPACE_FOLDER=${GITHUB_WORKSPACE} api make migrate
       
       - name: Run tests
-        shell: 'script -q -e -c "bash {0}"'
+        shell: 'script -q -e -c "bash {0}"' # tty workaround
         run: docker-compose exec api make test
