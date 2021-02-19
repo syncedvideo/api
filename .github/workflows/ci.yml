@@ -6,20 +6,21 @@ on:
   pull_request:
     branches: [ master ]
 
-
+env:
+  HTTP_PORT: 3000
+  POSTGRES_HOST: postgres
+  POSTGRES_PORT: 5432
+  POSTGRES_USER: default
+  POSTGRES_PASSWORD: secret
+  POSTGRES_DB: default
+  REDIS_HOST: redis
+  REDIS_PORT: 6379
+  YOUTUBE_API_KEY: 
 
 jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
-
-    env:
-      POSTGRES_HOST: postgres
-      POSTGRES_PORT: 5432
-      POSTGRES_USER: default
-      POSTGRES_PASSWORD: secret
-      POSTGRES_DB: default
-
     steps:
       - uses: actions/checkout@v2
       - run: docker-compose up -d
