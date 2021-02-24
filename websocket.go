@@ -28,7 +28,7 @@ func NewWebSocketMessage(msgType int, msgData interface{}) *WebSocketMessage {
 	}
 }
 
-// MarshalBinary: Implementation of encoding.BinaryMarshaler interface
+// MarshalBinary implements encoding.BinaryMarshaler
 func (msg *WebSocketMessage) MarshalBinary() ([]byte, error) {
 	return json.Marshal(msg)
 }
