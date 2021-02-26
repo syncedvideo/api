@@ -8,26 +8,27 @@ import (
 )
 
 func TestRun(t *testing.T) {
-	t.Run("register and unregister", func(t *testing.T) {
+	t.Run("join and leave", func(t *testing.T) {
 		room := newRoom()
 		go room.Run()
 		defer room.Close()
 
 		users := []userMock{newUser(), newUser(), newUser()}
 		for _, user := range users {
-			room.register <- user
+			room.join <- user
 		}
 		if len(room.users) != len(users) {
-			t.Errorf("register failed: got %v want %v", len(room.users), len(users))
+			t.Errorf("join failed: got %v want %v", len(room.users), len(users))
 		}
 
 		for _, user := range users {
-			room.unregister <- user
+			room.leave <- user
 		}
 		if len(room.users) != 0 {
-			t.Errorf("unregister failed: got %v want 0", len(room.users))
+			t.Errorf("leave failed: got %v want 0", len(room.users))
 		}
 	})
+
 }
 
 func newRoom() Room {

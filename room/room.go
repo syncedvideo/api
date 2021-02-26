@@ -8,10 +8,10 @@ import (
 )
 
 type Room struct {
-	ID         fmt.Stringer `json:"id" db:"id"`
-	users      map[User]bool
-	register   chan User
-	unregister chan User
+	ID    fmt.Stringer `json:"id" db:"id"`
+	users map[User]bool
+	join  chan User
+	leave chan User
 }
 
 type User interface {
@@ -20,10 +20,10 @@ type User interface {
 
 func New() Room {
 	return Room{
-		ID:         uuid.New(),
-		users:      make(map[User]bool),
-		register:   make(chan User),
-		unregister: make(chan User),
+		ID:    uuid.New(),
+		users: make(map[User]bool),
+		join:  make(chan User),
+		leave: make(chan User),
 	}
 }
 
@@ -31,14 +31,14 @@ func (r *Room) Run() {
 	for {
 		time.Sleep(time.Millisecond)
 		select {
-		case user := <-r.register:
+		case user := <-r.join:
 			r.users[user] = true
-		case user := <-r.unregister:
+		case user := <-r.leave:
 			delete(r.users, user)
 		}
 	}
 }
 
 func (r *Room) Close() {
-	close(r.register)
+	close(r.join)
 }
