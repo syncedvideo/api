@@ -9,7 +9,8 @@ RUN apk update && \
 FROM base as ci
 
 ENV CGO_ENABLED=0
-COPY . .
+COPY . /src
+WORKDIR /src
 
 # ==========================================
 
