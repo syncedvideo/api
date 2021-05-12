@@ -3,11 +3,8 @@
 	"dockerComposeFile": [
 		"../docker-compose.yml"
 	],
-	"service": "api",
+	"service": "server",
 	"workspaceFolder": "/workspace",
-	"remoteEnv": {
-		"LOCAL_WORKSPACE_FOLDER": "${localWorkspaceFolder}"
-	},
 	"settings": {
 		"terminal.integrated.shell.linux": "/bin/sh",
 		"go.gopath": "/go",
