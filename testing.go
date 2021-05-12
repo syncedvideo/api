@@ -2,8 +2,10 @@ package syncedvideo
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"testing"
 )
 
@@ -36,11 +38,31 @@ func AssertBody(t testing.TB, r *httptest.ResponseRecorder, want string) {
 	}
 }
 
-func AssertJSONContentType(t testing.TB, r *httptest.ResponseRecorder) {
+func AssertJsonContentType(t testing.TB, r *httptest.ResponseRecorder) {
 	t.Helper()
 	got := r.Header().Get("Content-Type")
-	want := JSONContentType
+	want := jsonContentType
 	if got != want {
 		t.Errorf("wrong response content type: got %q, want %q", got, want)
 	}
+}
+
+func AssertRoom(t testing.TB, want, got Room) {
+	t.Helper()
+	if !reflect.DeepEqual(want, got) {
+		t.Errorf("wrong room: got %q, want %q", got, want)
+	}
+}
+
+func AssertNoError(t testing.TB, err error) {
+	t.Helper()
+	if err != nil {
+		t.Fatalf("didn't expect an error but got one: %v", err)
+	}
+}
+
+func GetRoomFromResponse(t testing.TB, body io.Reader) Room {
+	room, err := NewRoom(body)
+	AssertNoError(t, err)
+	return room
 }

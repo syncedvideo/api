@@ -8,10 +8,12 @@ import (
 
 func TestGetRoom(t *testing.T) {
 
+	jeromesRoom := Room{ID: "jerome", Name: "Jeromes room"}
+	philippsRoom := Room{ID: "philipp", Name: "Philipps room"}
 	store := &StubRoomStore{
 		Rooms: map[string]Room{
-			"jerome":  {id: "jerome", name: "Jeromes room"},
-			"philipp": {id: "philipp", name: "Philipps room"},
+			"jerome":  jeromesRoom,
+			"philipp": philippsRoom,
 		},
 	}
 	server := NewServer(store)
@@ -22,9 +24,11 @@ func TestGetRoom(t *testing.T) {
 
 		server.ServeHTTP(response, request)
 
+		got := GetRoomFromResponse(t, response.Body)
+
+		AssertRoom(t, jeromesRoom, got)
 		AssertStatus(t, response, http.StatusOK)
-		AssertJSONContentType(t, response)
-		AssertBody(t, response, "Jeromes room")
+		AssertJsonContentType(t, response)
 	})
 
 	t.Run("it returns Philipps room", func(t *testing.T) {
@@ -33,9 +37,11 @@ func TestGetRoom(t *testing.T) {
 
 		server.ServeHTTP(response, request)
 
+		got := GetRoomFromResponse(t, response.Body)
+
+		AssertRoom(t, philippsRoom, got)
 		AssertStatus(t, response, http.StatusOK)
-		AssertJSONContentType(t, response)
-		AssertBody(t, response, "Philipps room")
+		AssertJsonContentType(t, response)
 	})
 
 	t.Run("it returns 404 on missing rooms", func(t *testing.T) {

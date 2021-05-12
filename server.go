@@ -1,6 +1,7 @@
 package syncedvideo
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -16,29 +17,29 @@ type Server struct {
 }
 
 type Room struct {
-	id   string
-	name string
+	ID   string `json:"id"`
+	Name string `json:"name"`
 }
 
-const JSONContentType = "application/json"
+const jsonContentType = "application/json"
 
 func NewServer(store RoomStore) *Server {
-	server := &Server{}
+	server := new(Server)
 	server.store = store
 
 	router := chi.NewMux()
 
 	router.Get("/rooms/{id}", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", JSONContentType)
+		w.Header().Set("Content-Type", jsonContentType)
 		id := chi.URLParam(r, "id")
 
 		room := server.store.GetRoom(id)
-		if room.id == "" {
+		if room.ID == "" {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
 
-		w.Write([]byte(room.name))
+		json.NewEncoder(w).Encode(room)
 	})
 
 	server.Handler = router
