@@ -28,21 +28,21 @@ func NewServer(store RoomStore) *Server {
 	server.store = store
 
 	router := chi.NewMux()
-
-	router.Get("/rooms/{id}", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", jsonContentType)
-		id := chi.URLParam(r, "id")
-
-		room := server.store.GetRoom(id)
-		if room.ID == "" {
-			w.WriteHeader(http.StatusNotFound)
-			return
-		}
-
-		json.NewEncoder(w).Encode(room)
-	})
-
+	router.Get("/rooms/{id}", server.getRoomHandler)
 	server.Handler = router
 
 	return server
+}
+
+func (s *Server) getRoomHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", jsonContentType)
+	id := chi.URLParam(r, "id")
+
+	room := s.store.GetRoom(id)
+	if room.ID == "" {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	json.NewEncoder(w).Encode(room)
 }
