@@ -4,9 +4,11 @@
 		"../docker-compose.yml"
 	],
 	"service": "server",
+	"remoteUser": "vscode",
 	"workspaceFolder": "/workspace",
 	"settings": {
-		"terminal.integrated.shell.linux": "/bin/sh",
+		"terminal.integrated.shell.linux": "/bin/zsh",
+		"files.eol": "\n",
 		"go.gopath": "/go",
 		"go.lintFlags": [
 			"--fast"
@@ -15,12 +17,12 @@
 		"gopls": {
 			"usePlaceholders": true
 		},
-		"files.eol": "\n"
 	},
 	"extensions": [
 		"golang.Go",
 		"2gua.rainbow-brackets",
 		"oderwat.indent-rainbow",
-		"adpyke.vscode-sql-formatter"
-	]
+		"adpyke.vscode-sql-formatter",
+		"ricardoerikson.vscode-go-impl-methods"
+	],
 }
