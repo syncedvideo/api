@@ -1,6 +1,8 @@
 package syncedvideo
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -20,6 +22,19 @@ func (s *StubRoomStore) GetRoom(id string) Room {
 func NewGetRoomRequest(id string) *http.Request {
 	request, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("/rooms/%s", id), nil)
 	return request
+}
+
+func NewPostRoomChatRequest(id string, message ChatMessage) *http.Request {
+	messageB, _ := json.Marshal(message)
+	request, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("/rooms/%s/chat", "jerome"), bytes.NewBuffer(messageB))
+	return request
+}
+
+func AssertChatMessage(t testing.TB, got, want ChatMessage) {
+	t.Helper()
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("wrong message: got %v, want %v", got, want)
+	}
 }
 
 func AssertStatus(t testing.TB, r *httptest.ResponseRecorder, want int) {
@@ -50,7 +65,7 @@ func AssertJsonContentType(t testing.TB, r *httptest.ResponseRecorder) {
 func AssertRoom(t testing.TB, want, got Room) {
 	t.Helper()
 	if !reflect.DeepEqual(want, got) {
-		t.Errorf("wrong room: got %q, want %q", got, want)
+		t.Errorf("wrong room: got %v, want %v", got, want)
 	}
 }
 
@@ -65,4 +80,18 @@ func GetRoomFromResponse(t testing.TB, body io.Reader) Room {
 	room, err := NewRoom(body)
 	AssertNoError(t, err)
 	return room
+}
+
+type MockRoomPubSub struct {
+	ch chan RoomEvent
+}
+
+func (m *MockRoomPubSub) Publish(roomID string, event RoomEvent) {
+	m.ch <- event
+}
+
+func (m *MockRoomPubSub) Subscribe(roomID string) <-chan RoomEvent {
+	ch := make(chan RoomEvent)
+	m.ch = ch
+	return ch
 }
