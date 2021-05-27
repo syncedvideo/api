@@ -63,30 +63,36 @@ func TestGetRoom(t *testing.T) {
 
 func TestChat(t *testing.T) {
 
-	roomID := "jerome"
-
 	store := &StubRoomStore{
 		Rooms: map[string]Room{
-			roomID: {
-				ID:   roomID,
+			"jerome": {
+				ID:   "jerome",
 				Name: "Jeromes room",
-				Chat: &Chat{
-					Messages: []ChatMessage{},
-				}},
+			},
 		},
 	}
 
 	pubSub := &MockRoomPubSub{}
 	server := NewServer(store, pubSub)
-	webSocketServer := httptest.NewServer(server)
-	ws := mustDialWS(t, "ws"+strings.TrimPrefix(webSocketServer.URL, "http")+fmt.Sprintf("/rooms/%s/ws", roomID))
 
-	defer ws.Close()
-	defer webSocketServer.Close()
+	t.Run("it returns 404 on missing rooms", func(t *testing.T) {
+		request := NewPostRoomChatRequest("philipp", ChatMessage{})
+		response := httptest.NewRecorder()
+
+		server.ServeHTTP(response, request)
+
+		AssertStatus(t, response, http.StatusNotFound)
+	})
 
 	t.Run("send and receive chat messages", func(t *testing.T) {
-		wantChatMessage := ChatMessage{ID: "1", Author: "Tobi", Message: "Steinreinigung läuft"}
-		request := NewPostRoomChatRequest(roomID, wantChatMessage)
+		wsServer := httptest.NewServer(server)
+		ws := mustDialWS(t, "ws"+strings.TrimPrefix(wsServer.URL, "http")+fmt.Sprintf("/rooms/%s/ws", "jerome"))
+
+		defer ws.Close()
+		defer wsServer.Close()
+
+		msg := ChatMessage{ID: "1", Author: "Tobi", Message: "Steinreinigung läuft"}
+		request := NewPostRoomChatRequest("jerome", msg)
 		response := httptest.NewRecorder()
 
 		server.ServeHTTP(response, request)
@@ -94,11 +100,8 @@ func TestChat(t *testing.T) {
 		AssertStatus(t, response, http.StatusCreated)
 		AssertJsonContentType(t, response)
 
-		gotChatMessage := store.GetRoom(roomID).Chat.Messages[0]
-		AssertChatMessage(t, gotChatMessage, wantChatMessage)
-
-		messageBytes, _ := json.Marshal(&gotChatMessage)
-		wantEvent := RoomEvent{T: 1, D: messageBytes}
+		msgB, _ := json.Marshal(msg)
+		wantEvent := RoomEvent{T: 1, D: msgB}
 		within(t, tenMs, func() {
 			assertWebsocketGotEvent(t, ws, wantEvent)
 		})

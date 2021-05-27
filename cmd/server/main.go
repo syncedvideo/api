@@ -13,9 +13,7 @@ import (
 func main() {
 	store := &syncedvideo.StubRoomStore{
 		Rooms: map[string]syncedvideo.Room{
-			"jerome": {ID: "jerome", Name: "Jeromes room", Chat: &syncedvideo.Chat{
-				Messages: []syncedvideo.ChatMessage{},
-			}},
+			"jerome": {ID: "jerome", Name: "Jeromes room"},
 		},
 	}
 	pubSub := syncedvideo.NewRedisRoomPubSub(newRedisClient())

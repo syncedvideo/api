@@ -55,17 +55,19 @@ func (s *Server) getRoomHandler(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) postChatHandler(w http.ResponseWriter, r *http.Request) {
 	roomID := chi.URLParam(r, "id")
+	room := s.store.GetRoom(roomID)
+
+	if room.ID == "" {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
 
 	w.Header().Set("Content-Type", jsonContentType)
 	w.WriteHeader(http.StatusCreated)
 
-	message, _ := NewChatMessage(r.Body)
-
-	room := s.store.GetRoom(roomID)
-	room.Chat.Messages = append(room.Chat.Messages, message)
-
-	messageB, _ := json.Marshal(message)
-	event := RoomEvent{T: 1, D: messageB}
+	msg, _ := NewChatMessage(r.Body)
+	msgB, _ := json.Marshal(msg)
+	event := RoomEvent{T: 1, D: msgB}
 	s.pubSub.Publish(room.ID, event)
 }
 

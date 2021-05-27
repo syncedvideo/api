@@ -26,7 +26,7 @@ func NewGetRoomRequest(id string) *http.Request {
 
 func NewPostRoomChatRequest(id string, message ChatMessage) *http.Request {
 	messageB, _ := json.Marshal(message)
-	request, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("/rooms/%s/chat", "jerome"), bytes.NewBuffer(messageB))
+	request, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("/rooms/%s/chat", id), bytes.NewBuffer(messageB))
 	return request
 }
 

@@ -13,7 +13,6 @@ import (
 type Room struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
-	Chat *Chat  `json:"chat"`
 }
 
 func NewRoom(reader io.Reader) (Room, error) {
@@ -58,12 +57,12 @@ func (r *RedisRoomPubSub) Subscribe(roomID string) <-chan RoomEvent {
 
 	go func() {
 		for msg := range pubSub.Channel() {
-			log.Printf("received %v", msg)
+			log.Printf("redis received message: %v\n", msg)
 
 			event := RoomEvent{}
 			err := json.Unmarshal([]byte(msg.Payload), &event)
 			if err != nil {
-				log.Printf("error unmarshalling event: %v", err)
+				log.Printf("error unmarshalling event: %v\n", err)
 				break
 			}
 
@@ -72,23 +71,4 @@ func (r *RedisRoomPubSub) Subscribe(roomID string) <-chan RoomEvent {
 	}()
 
 	return ch
-}
-
-type Chat struct {
-	Messages []ChatMessage `json:"messages"`
-}
-
-type ChatMessage struct {
-	ID      string `json:"id"`
-	Author  string `json:"author"`
-	Message string `json:"message"`
-}
-
-func NewChatMessage(reader io.Reader) (ChatMessage, error) {
-	message := ChatMessage{}
-	err := json.NewDecoder(reader).Decode(&message)
-	if err != nil {
-		return message, fmt.Errorf("error decoding chat message: %v", err)
-	}
-	return message, nil
 }
