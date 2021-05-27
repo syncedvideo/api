@@ -8,6 +8,7 @@ import (
 	"log"
 
 	"github.com/go-redis/redis/v8"
+	"github.com/google/uuid"
 )
 
 type Room struct {
@@ -25,8 +26,32 @@ func NewRoom(reader io.Reader) (Room, error) {
 }
 
 type RoomEvent struct {
-	T int             `json:"t"`
-	D json.RawMessage `json:"d"`
+	ID string          `json:"id"`
+	T  int             `json:"t"`
+	D  json.RawMessage `json:"d"`
+}
+
+func NewRoomEvent(eventType int, data []byte) RoomEvent {
+	return RoomEvent{
+		ID: uuid.NewString(),
+		T:  eventType,
+		D:  data,
+	}
+}
+
+func (e *RoomEvent) ResetIDFields() {
+	e.ID = ""
+
+	data := make(map[string]interface{})
+	json.Unmarshal(e.D, &data)
+
+	_, ok := data["id"]
+	if ok {
+		data["id"] = ""
+	}
+
+	dataB, _ := json.Marshal(data)
+	e.D = dataB
 }
 
 type RedisRoomPubSub struct {

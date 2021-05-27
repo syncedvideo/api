@@ -1,9 +1,7 @@
 package syncedvideo
 
 import (
-	"encoding/json"
-	"fmt"
-	"io"
+	"github.com/google/uuid"
 )
 
 type ChatMessage struct {
@@ -12,11 +10,10 @@ type ChatMessage struct {
 	Message string `json:"message"`
 }
 
-func NewChatMessage(reader io.Reader) (ChatMessage, error) {
-	message := ChatMessage{}
-	err := json.NewDecoder(reader).Decode(&message)
-	if err != nil {
-		return message, fmt.Errorf("error decoding chat message: %v", err)
+func NewChatMessage(author, message string) ChatMessage {
+	return ChatMessage{
+		ID:      uuid.NewString(),
+		Author:  author,
+		Message: message,
 	}
-	return message, nil
 }

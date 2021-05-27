@@ -9,6 +9,9 @@ import (
 	"net/http/httptest"
 	"reflect"
 	"testing"
+	"time"
+
+	"github.com/gorilla/websocket"
 )
 
 type StubRoomStore struct {
@@ -94,4 +97,60 @@ func (m *MockRoomPubSub) Subscribe(roomID string) <-chan RoomEvent {
 	ch := make(chan RoomEvent)
 	m.ch = ch
 	return ch
+}
+
+func Within(t testing.TB, d time.Duration, assert func()) {
+	t.Helper()
+
+	done := make(chan struct{}, 1)
+
+	go func() {
+		assert()
+		done <- struct{}{}
+	}()
+
+	select {
+	case <-time.After(d):
+		t.Error("timed out")
+	case <-done:
+	}
+}
+
+func MustDialWS(t testing.TB, wsURL string) *websocket.Conn {
+	t.Helper()
+	ws, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
+	if err != nil {
+		t.Fatalf("could not open a ws connection on %s %v", wsURL, err)
+	}
+	return ws
+}
+
+func MustWriteWSMessage(t testing.TB, conn *websocket.Conn, msg []byte) {
+	t.Helper()
+	err := conn.WriteMessage(websocket.TextMessage, msg)
+	if err != nil {
+		t.Fatalf("could not send message over ws connection %v", err)
+	}
+}
+
+func AssertWebsocketGotEvent(t testing.TB, ws *websocket.Conn, want RoomEvent) {
+	t.Helper()
+
+	_, msg, err := ws.ReadMessage()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	got := RoomEvent{}
+	err = json.Unmarshal(msg, &got)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	got.ResetIDFields()
+	want.ResetIDFields()
+
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("got %q, want %q", got, want)
+	}
 }

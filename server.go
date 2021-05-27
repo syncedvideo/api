@@ -65,9 +65,13 @@ func (s *Server) postChatHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", jsonContentType)
 	w.WriteHeader(http.StatusCreated)
 
-	msg, _ := NewChatMessage(r.Body)
-	msgB, _ := json.Marshal(msg)
-	event := RoomEvent{T: 1, D: msgB}
+	chatMsg1 := ChatMessage{}
+	json.NewDecoder(r.Body).Decode(&chatMsg1)
+	chatMsg := NewChatMessage(chatMsg1.Author, chatMsg1.Message)
+
+	chatMsgBytes, _ := json.Marshal(chatMsg)
+
+	event := NewRoomEvent(1, chatMsgBytes)
 	s.pubSub.Publish(room.ID, event)
 }
 
