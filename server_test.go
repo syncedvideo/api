@@ -99,7 +99,7 @@ func TestChat(t *testing.T) {
 		AssertJsonContentType(t, response)
 
 		chatMsgB, _ := json.Marshal(chatMsg)
-		wantEvent := NewEvent(1, chatMsgB)
+		wantEvent := NewEvent(EventTypeChat, chatMsgB)
 		Within(t, 10*time.Millisecond, func() {
 			AssertWebsocketGotEvent(t, ws, wantEvent)
 		})

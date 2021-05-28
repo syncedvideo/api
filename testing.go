@@ -147,25 +147,34 @@ func AssertWebsocketGotEvent(t testing.TB, ws *websocket.Conn, want Event) {
 		t.Fatal(err)
 	}
 
-	resetEventIDFields(&got)
-	resetEventIDFields(&want)
+	resetEventIDFields(t, &got)
+	resetEventIDFields(t, &want)
 
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("got %q, want %q", got, want)
 	}
 }
 
-func resetEventIDFields(event *Event) {
+func resetEventIDFields(t testing.TB, event *Event) {
+	t.Helper()
+
 	event.ID = ""
 
 	data := make(map[string]interface{})
-	json.Unmarshal(event.D, &data)
+	err := json.Unmarshal(event.D, &data)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	_, ok := data["id"]
 	if ok {
 		data["id"] = ""
 	}
 
-	dataB, _ := json.Marshal(data)
+	dataB, err := json.Marshal(data)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	event.D = dataB
 }

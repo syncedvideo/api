@@ -6,11 +6,32 @@ import (
 	"log"
 
 	"github.com/go-redis/redis/v8"
+	"github.com/google/uuid"
 )
 
 type PubSub interface {
 	Publish(roomID string, event Event)
 	Subscribe(roomID string) <-chan Event
+}
+
+type Event struct {
+	ID string          `json:"id"`
+	T  EventType       `json:"t"`
+	D  json.RawMessage `json:"d"`
+}
+
+type EventType string
+
+var (
+	EventTypeChat EventType = "chat"
+)
+
+func NewEvent(eventType EventType, data []byte) Event {
+	return Event{
+		ID: uuid.NewString(),
+		T:  eventType,
+		D:  data,
+	}
 }
 
 type RedisPubSub struct {
@@ -26,13 +47,13 @@ func NewRedisPubSub(client *redis.Client) *RedisPubSub {
 func (r *RedisPubSub) Publish(roomID string, event Event) {
 	log.Printf("publish %v", event)
 
-	eb, err := json.Marshal(event)
+	eventB, err := json.Marshal(event)
 	if err != nil {
-		log.Printf("error marshalling event bytes: %v\n", err)
+		log.Printf("error marshalling event: %s\n", err)
 		return
 	}
 
-	r.client.Publish(context.Background(), roomID, eb)
+	r.client.Publish(context.Background(), roomID, eventB)
 }
 
 func (r *RedisPubSub) Subscribe(roomID string) <-chan Event {
