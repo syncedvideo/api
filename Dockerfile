@@ -38,6 +38,8 @@ RUN GO111MODULE=on go get golang.org/x/tools/gopls@master golang.org/x/tools@mas
 RUN go install honnef.co/go/tools/cmd/staticcheck@latest
 ENV CGO_ENABLED=0
 
+WORKDIR workspace
+
 # ==========================================
 
 FROM base AS builder
