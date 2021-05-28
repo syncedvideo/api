@@ -85,16 +85,16 @@ func GetRoomFromResponse(t testing.TB, body io.Reader) Room {
 	return room
 }
 
-type MockRoomPubSub struct {
-	ch chan RoomEvent
+type MockPubSub struct {
+	ch chan Event
 }
 
-func (m *MockRoomPubSub) Publish(roomID string, event RoomEvent) {
+func (m *MockPubSub) Publish(roomID string, event Event) {
 	m.ch <- event
 }
 
-func (m *MockRoomPubSub) Subscribe(roomID string) <-chan RoomEvent {
-	ch := make(chan RoomEvent)
+func (m *MockPubSub) Subscribe(roomID string) <-chan Event {
+	ch := make(chan Event)
 	m.ch = ch
 	return ch
 }
@@ -133,7 +133,7 @@ func MustWriteWSMessage(t testing.TB, conn *websocket.Conn, msg []byte) {
 	}
 }
 
-func AssertWebsocketGotEvent(t testing.TB, ws *websocket.Conn, want RoomEvent) {
+func AssertWebsocketGotEvent(t testing.TB, ws *websocket.Conn, want Event) {
 	t.Helper()
 
 	_, msg, err := ws.ReadMessage()
@@ -141,16 +141,31 @@ func AssertWebsocketGotEvent(t testing.TB, ws *websocket.Conn, want RoomEvent) {
 		t.Fatal(err)
 	}
 
-	got := RoomEvent{}
+	got := Event{}
 	err = json.Unmarshal(msg, &got)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	got.ResetIDFields()
-	want.ResetIDFields()
+	resetEventIDFields(&got)
+	resetEventIDFields(&want)
 
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("got %q, want %q", got, want)
 	}
+}
+
+func resetEventIDFields(event *Event) {
+	event.ID = ""
+
+	data := make(map[string]interface{})
+	json.Unmarshal(event.D, &data)
+
+	_, ok := data["id"]
+	if ok {
+		data["id"] = ""
+	}
+
+	dataB, _ := json.Marshal(data)
+	event.D = dataB
 }

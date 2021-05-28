@@ -13,20 +13,15 @@ type RoomStore interface {
 	GetRoom(id string) Room
 }
 
-type RoomPubSub interface {
-	Publish(roomID string, event RoomEvent)
-	Subscribe(roomID string) <-chan RoomEvent
-}
-
 type Server struct {
 	store RoomStore
 	http.Handler
-	pubSub RoomPubSub
+	pubSub PubSub
 }
 
 const jsonContentType = "application/json"
 
-func NewServer(store RoomStore, pubSub RoomPubSub) *Server {
+func NewServer(store RoomStore, pubSub PubSub) *Server {
 	server := new(Server)
 	server.store = store
 	server.pubSub = pubSub
@@ -71,7 +66,7 @@ func (s *Server) postChatHandler(w http.ResponseWriter, r *http.Request) {
 
 	chatMsgBytes, _ := json.Marshal(chatMsg)
 
-	event := NewRoomEvent(1, chatMsgBytes)
+	event := NewEvent(1, chatMsgBytes)
 	s.pubSub.Publish(room.ID, event)
 }
 

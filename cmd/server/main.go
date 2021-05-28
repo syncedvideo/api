@@ -16,7 +16,7 @@ func main() {
 			"jerome": {ID: "jerome", Name: "Jeromes room"},
 		},
 	}
-	pubSub := syncedvideo.NewRedisRoomPubSub(newRedisClient())
+	pubSub := syncedvideo.NewRedisPubSub(newRedisClient())
 
 	server := syncedvideo.NewServer(store, pubSub)
 	log.Fatal(http.ListenAndServe(":3000", server))

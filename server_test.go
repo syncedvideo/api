@@ -69,7 +69,7 @@ func TestChat(t *testing.T) {
 		},
 	}
 
-	pubSub := &MockRoomPubSub{}
+	pubSub := &MockPubSub{}
 	server := NewServer(store, pubSub)
 
 	t.Run("return 404 on missing rooms", func(t *testing.T) {
@@ -99,7 +99,7 @@ func TestChat(t *testing.T) {
 		AssertJsonContentType(t, response)
 
 		chatMsgB, _ := json.Marshal(chatMsg)
-		wantEvent := NewRoomEvent(1, chatMsgB)
+		wantEvent := NewEvent(1, chatMsgB)
 		Within(t, 10*time.Millisecond, func() {
 			AssertWebsocketGotEvent(t, ws, wantEvent)
 		})
