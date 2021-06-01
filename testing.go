@@ -15,11 +15,22 @@ import (
 )
 
 type StubRoomStore struct {
-	Rooms map[string]Room
+	Rooms           map[string]Room
+	CreateRoomCalls []string
+}
+
+func (s *StubRoomStore) CreateRoom(room *Room) {
+	s.CreateRoomCalls = append(s.CreateRoomCalls, room.Name)
 }
 
 func (s *StubRoomStore) GetRoom(id string) Room {
 	return s.Rooms[id]
+}
+
+func NewPostRoomRequest(room Room) *http.Request {
+	roomB, _ := json.Marshal(room)
+	request, _ := http.NewRequest(http.MethodPost, "/rooms", bytes.NewBuffer(roomB))
+	return request
 }
 
 func NewGetRoomRequest(id string) *http.Request {
@@ -67,8 +78,9 @@ func AssertJsonContentType(t testing.TB, r *httptest.ResponseRecorder) {
 
 func AssertRoom(t testing.TB, want, got Room) {
 	t.Helper()
-	if !reflect.DeepEqual(want, got) {
-		t.Errorf("wrong room: got %v, want %v", got, want)
+	if want.Name != got.Name {
+		t.Errorf("wrong room: got %s, want %s", got, want)
+
 	}
 }
 
@@ -76,6 +88,13 @@ func AssertNoError(t testing.TB, err error) {
 	t.Helper()
 	if err != nil {
 		t.Fatalf("didn't expect an error but got one: %v", err)
+	}
+}
+
+func AssertError(t testing.TB, want, got error) {
+	t.Helper()
+	if want != got {
+		t.Fatalf("wrong error: got %s, want %s", got, want)
 	}
 }
 
@@ -179,9 +198,9 @@ func resetEventIDFields(t testing.TB, event *Event) {
 	event.D = dataB
 }
 
-func AssertError(t testing.TB, want, got error) {
+func AssertCreateRoomCalls(t testing.TB, got []string, want int) {
 	t.Helper()
-	if want != got {
-		t.Fatalf("wrong error: got %s, want %s", got, want)
+	if len(got) != want {
+		t.Errorf("wrong create room calls: got %d, want %d", len(got), want)
 	}
 }

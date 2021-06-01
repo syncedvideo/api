@@ -12,6 +12,29 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+func TestPostRoom(t *testing.T) {
+
+	store := &StubRoomStore{}
+	server := NewServer(store, nil)
+
+	t.Run("create room and return created room as json", func(t *testing.T) {
+		wantRoom := Room{Name: "TestRoom"}
+
+		request := NewPostRoomRequest(wantRoom)
+		response := httptest.NewRecorder()
+
+		server.ServeHTTP(response, request)
+
+		AssertCreateRoomCalls(t, store.CreateRoomCalls, 1)
+
+		gotRoom := GetRoomFromResponse(t, response.Body)
+		AssertRoom(t, wantRoom, gotRoom)
+
+		AssertStatus(t, response, http.StatusCreated)
+		AssertJsonContentType(t, response)
+	})
+}
+
 func TestGetRoom(t *testing.T) {
 
 	jeromesRoom := Room{ID: "jerome", Name: "Jeromes room"}

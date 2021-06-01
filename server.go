@@ -10,6 +10,7 @@ import (
 )
 
 type RoomStore interface {
+	CreateRoom(room *Room)
 	GetRoom(id string) Room
 }
 
@@ -27,12 +28,21 @@ func NewServer(store RoomStore, pubSub PubSub) *Server {
 	server.pubSub = pubSub
 
 	router := chi.NewMux()
+	router.Post("/rooms", server.postRoomHandler)
 	router.Get("/rooms/{id}", server.getRoomHandler)
 	router.Get("/rooms/{id}/ws", server.webSocket)
 	router.Post("/rooms/{id}/chat", server.postChatHandler)
 	server.Handler = router
 
 	return server
+}
+
+func (s *Server) postRoomHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", jsonContentType)
+	w.WriteHeader(http.StatusCreated)
+	room, _ := NewRoom(r.Body)
+	s.store.CreateRoom(&room)
+	json.NewEncoder(w).Encode(room)
 }
 
 func (s *Server) getRoomHandler(w http.ResponseWriter, r *http.Request) {

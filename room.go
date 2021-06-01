@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+
+	"github.com/google/uuid"
 )
 
 type Room struct {
@@ -17,5 +19,6 @@ func NewRoom(reader io.Reader) (Room, error) {
 	if err != nil {
 		return room, fmt.Errorf("error decoding room: %v", err)
 	}
+	room.ID = uuid.NewString()
 	return room, nil
 }
