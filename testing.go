@@ -178,3 +178,10 @@ func resetEventIDFields(t testing.TB, event *Event) {
 
 	event.D = dataB
 }
+
+func AssertError(t testing.TB, want, got error) {
+	t.Helper()
+	if want != got {
+		t.Fatalf("wrong error: got %s, want %s", got, want)
+	}
+}

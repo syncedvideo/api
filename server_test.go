@@ -8,6 +8,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/gorilla/websocket"
 )
 
 func TestGetRoom(t *testing.T) {
@@ -58,7 +60,33 @@ func TestGetRoom(t *testing.T) {
 	})
 }
 
-func TestChat(t *testing.T) {
+func TestWebSocket(t *testing.T) {
+
+	store := &StubRoomStore{
+		Rooms: map[string]Room{
+			"jerome": {
+				ID:   "jerome",
+				Name: "Jeromes room",
+			},
+		},
+	}
+
+	pubSub := &MockPubSub{}
+	server := NewServer(store, pubSub)
+
+	t.Run("cannot establish websocket connection if room is missing", func(t *testing.T) {
+
+		wsServer := httptest.NewServer(server)
+		defer wsServer.Close()
+
+		wsURL := newWebSocketURL(wsServer.URL, "philipp")
+		_, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
+
+		AssertError(t, websocket.ErrBadHandshake, err)
+	})
+}
+
+func TestPostChat(t *testing.T) {
 
 	store := &StubRoomStore{
 		Rooms: map[string]Room{
@@ -83,7 +111,8 @@ func TestChat(t *testing.T) {
 
 	t.Run("send and receive chat message", func(t *testing.T) {
 		wsServer := httptest.NewServer(server)
-		ws := MustDialWS(t, "ws"+strings.TrimPrefix(wsServer.URL, "http")+fmt.Sprintf("/rooms/%s/ws", "jerome"))
+		wsURL := newWebSocketURL(wsServer.URL, "jerome")
+		ws := MustDialWS(t, wsURL)
 
 		defer ws.Close()
 		defer wsServer.Close()
@@ -99,9 +128,13 @@ func TestChat(t *testing.T) {
 		AssertJsonContentType(t, response)
 
 		chatMsgB, _ := json.Marshal(chatMsg)
-		wantEvent := NewEvent(EventTypeChat, chatMsgB)
+		wantEvent := NewEvent(EventChat, chatMsgB)
 		Within(t, 10*time.Millisecond, func() {
 			AssertWebsocketGotEvent(t, ws, wantEvent)
 		})
 	})
+}
+
+func newWebSocketURL(serverURL, roomID string) string {
+	return "ws" + strings.TrimPrefix(serverURL, "http") + fmt.Sprintf("/rooms/%s/ws", roomID)
 }

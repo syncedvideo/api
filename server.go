@@ -66,7 +66,7 @@ func (s *Server) postChatHandler(w http.ResponseWriter, r *http.Request) {
 
 	chatMsgBytes, _ := json.Marshal(chatMsg)
 
-	event := NewEvent(EventTypeChat, chatMsgBytes)
+	event := NewEvent(EventChat, chatMsgBytes)
 	s.pubSub.Publish(room.ID, event)
 }
 
@@ -77,6 +77,11 @@ var upgrader = websocket.Upgrader{
 
 func (s *Server) webSocket(w http.ResponseWriter, r *http.Request) {
 	roomID := chi.URLParam(r, "id")
+	room := s.store.GetRoom(roomID)
+	if room.ID == "" {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
 
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {

@@ -23,7 +23,7 @@ type Event struct {
 type EventType string
 
 var (
-	EventTypeChat EventType = "chat"
+	EventChat EventType = "chat"
 )
 
 func NewEvent(eventType EventType, data []byte) Event {

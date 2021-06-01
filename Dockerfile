@@ -23,7 +23,6 @@ RUN apk update && \
     apk upgrade && \
     apk add --no-cache git zsh
 
-
 RUN addgroup -S $USERNAME && adduser -S $USERNAME -G $USERNAME --uid "$UID"
 USER $USERNAME
 
@@ -38,7 +37,7 @@ RUN GO111MODULE=on go get golang.org/x/tools/gopls@master golang.org/x/tools@mas
 RUN go install honnef.co/go/tools/cmd/staticcheck@latest
 ENV CGO_ENABLED=0
 
-WORKDIR workspace
+WORKDIR /workspace
 
 # ==========================================
 
