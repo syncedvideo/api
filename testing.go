@@ -67,6 +67,36 @@ func AssertBody(t testing.TB, r *httptest.ResponseRecorder, want string) {
 	}
 }
 
+func AssertCookie(t testing.TB, cookies []*http.Cookie, name string) {
+	t.Helper()
+
+	var got *http.Cookie
+	for _, cookie := range cookies {
+		if cookie.Name == name {
+			got = cookie
+			break
+		}
+	}
+	if got == nil {
+		t.Errorf(`cookie was not found in response, want "%s"`, name)
+	}
+}
+
+func AssertNoCookie(t testing.TB, cookies []*http.Cookie, name string) {
+	t.Helper()
+
+	var got *http.Cookie
+	for _, cookie := range cookies {
+		if cookie.Name == name {
+			got = cookie
+			break
+		}
+	}
+	if got != nil {
+		t.Errorf("didn't expect an cookie but got one: %s", got.Name)
+	}
+}
+
 func AssertJsonContentType(t testing.TB, r *httptest.ResponseRecorder) {
 	t.Helper()
 	got := r.Header().Get("Content-Type")

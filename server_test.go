@@ -25,13 +25,12 @@ func TestPostRoom(t *testing.T) {
 
 		server.ServeHTTP(response, request)
 
-		AssertCreateRoomCalls(t, store.CreateRoomCalls, 1)
-
 		gotRoom := GetRoomFromResponse(t, response.Body)
 		AssertRoom(t, wantRoom, gotRoom)
-
+		AssertCreateRoomCalls(t, store.CreateRoomCalls, 1)
 		AssertStatus(t, response, http.StatusCreated)
 		AssertJsonContentType(t, response)
+		AssertCookie(t, response.Result().Cookies(), userCookieName)
 	})
 }
 
@@ -58,6 +57,7 @@ func TestGetRoom(t *testing.T) {
 		AssertRoom(t, jeromesRoom, got)
 		AssertStatus(t, response, http.StatusOK)
 		AssertJsonContentType(t, response)
+		AssertCookie(t, response.Result().Cookies(), userCookieName)
 	})
 
 	t.Run("return Philipps room", func(t *testing.T) {
@@ -71,6 +71,7 @@ func TestGetRoom(t *testing.T) {
 		AssertRoom(t, philippsRoom, got)
 		AssertStatus(t, response, http.StatusOK)
 		AssertJsonContentType(t, response)
+		AssertCookie(t, response.Result().Cookies(), userCookieName)
 	})
 
 	t.Run("return 404 on missing rooms", func(t *testing.T) {
@@ -80,6 +81,7 @@ func TestGetRoom(t *testing.T) {
 		server.ServeHTTP(response, request)
 
 		AssertStatus(t, response, http.StatusNotFound)
+		AssertNoCookie(t, response.Result().Cookies(), userCookieName)
 	})
 }
 
@@ -107,6 +109,8 @@ func TestWebSocket(t *testing.T) {
 
 		AssertError(t, websocket.ErrBadHandshake, err)
 	})
+
+	// TODO: check user cookie
 }
 
 func TestPostChat(t *testing.T) {
@@ -123,8 +127,19 @@ func TestPostChat(t *testing.T) {
 	pubSub := &MockPubSub{}
 	server := NewServer(store, pubSub)
 
+	t.Run("return 401 if unauthorized", func(t *testing.T) {
+		request := NewPostRoomChatRequest("jerome", ChatMessage{})
+		response := httptest.NewRecorder()
+
+		server.ServeHTTP(response, request)
+
+		AssertStatus(t, response, http.StatusUnauthorized)
+	})
+
 	t.Run("return 404 on missing rooms", func(t *testing.T) {
 		request := NewPostRoomChatRequest("philipp", ChatMessage{})
+		request.AddCookie(NewUserCookie())
+
 		response := httptest.NewRecorder()
 
 		server.ServeHTTP(response, request)
@@ -137,12 +152,14 @@ func TestPostChat(t *testing.T) {
 		wsURL := newWebSocketURL(wsServer.URL, "jerome")
 		ws := MustDialWS(t, wsURL)
 
-		defer ws.Close()
 		defer wsServer.Close()
+		defer ws.Close()
 
 		chatMsg := NewChatMessage("Tobi", "Steinreinigung läuft")
 
 		request := NewPostRoomChatRequest("jerome", chatMsg)
+		request.AddCookie(NewUserCookie())
+
 		response := httptest.NewRecorder()
 
 		server.ServeHTTP(response, request)

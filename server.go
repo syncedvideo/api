@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 )
 
@@ -20,7 +22,10 @@ type Server struct {
 	pubSub PubSub
 }
 
-const jsonContentType = "application/json"
+const (
+	jsonContentType = "application/json"
+	userCookieName  = "user"
+)
 
 func NewServer(store RoomStore, pubSub PubSub) *Server {
 	server := new(Server)
@@ -38,15 +43,17 @@ func NewServer(store RoomStore, pubSub PubSub) *Server {
 }
 
 func (s *Server) postRoomHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", jsonContentType)
-	w.WriteHeader(http.StatusCreated)
 	room, _ := NewRoom(r.Body)
 	s.store.CreateRoom(&room)
+
+	http.SetCookie(w, NewUserCookie())
+	w.Header().Set("Content-Type", jsonContentType)
+	w.WriteHeader(http.StatusCreated)
+
 	json.NewEncoder(w).Encode(room)
 }
 
 func (s *Server) getRoomHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", jsonContentType)
 	id := chi.URLParam(r, "id")
 
 	room := s.store.GetRoom(id)
@@ -55,10 +62,20 @@ func (s *Server) getRoomHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	http.SetCookie(w, NewUserCookie())
+	w.Header().Set("Content-Type", jsonContentType)
+
 	json.NewEncoder(w).Encode(room)
 }
 
 func (s *Server) postChatHandler(w http.ResponseWriter, r *http.Request) {
+
+	_, err := r.Cookie(userCookieName)
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
 	roomID := chi.URLParam(r, "id")
 	room := s.store.GetRoom(roomID)
 
@@ -77,7 +94,7 @@ func (s *Server) postChatHandler(w http.ResponseWriter, r *http.Request) {
 	chatMsgBytes, _ := json.Marshal(chatMsg)
 
 	event := NewEvent(EventChat, chatMsgBytes)
-	s.pubSub.Publish(room.ID, event)
+	go s.pubSub.Publish(room.ID, event)
 }
 
 var upgrader = websocket.Upgrader{
@@ -109,5 +126,14 @@ func (s *Server) webSocket(w http.ResponseWriter, r *http.Request) {
 			log.Printf("error writing json: %v\n", err)
 			break
 		}
+	}
+}
+
+func NewUserCookie() *http.Cookie {
+	return &http.Cookie{
+		Name:     userCookieName,
+		HttpOnly: false,
+		Value:    uuid.NewString(),
+		Expires:  time.Now().Add(time.Hour * 24 * 360),
 	}
 }
