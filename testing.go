@@ -51,9 +51,8 @@ func AssertChatMessage(t testing.TB, got, want ChatMessage) {
 	}
 }
 
-func AssertStatus(t testing.TB, r *httptest.ResponseRecorder, want int) {
+func AssertStatus(t testing.TB, got, want int) {
 	t.Helper()
-	got := r.Code
 	if got != want {
 		t.Errorf("wrong status code: got %d, want %d", got, want)
 	}
@@ -165,9 +164,9 @@ func Within(t testing.TB, d time.Duration, assert func()) {
 	}
 }
 
-func MustDialWS(t testing.TB, wsURL string) *websocket.Conn {
+func MustDialWS(t testing.TB, wsURL string, requestHeader http.Header) *websocket.Conn {
 	t.Helper()
-	ws, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
+	ws, _, err := websocket.DefaultDialer.Dial(wsURL, requestHeader)
 	if err != nil {
 		t.Fatalf("could not open a ws connection on %s %v", wsURL, err)
 	}

@@ -28,7 +28,7 @@ func TestPostRoom(t *testing.T) {
 		gotRoom := GetRoomFromResponse(t, response.Body)
 		AssertRoom(t, wantRoom, gotRoom)
 		AssertCreateRoomCalls(t, store.CreateRoomCalls, 1)
-		AssertStatus(t, response, http.StatusCreated)
+		AssertStatus(t, response.Code, http.StatusCreated)
 		AssertJsonContentType(t, response)
 		AssertCookie(t, response.Result().Cookies(), userCookieName)
 	})
@@ -55,7 +55,7 @@ func TestGetRoom(t *testing.T) {
 		got := GetRoomFromResponse(t, response.Body)
 
 		AssertRoom(t, jeromesRoom, got)
-		AssertStatus(t, response, http.StatusOK)
+		AssertStatus(t, response.Code, http.StatusOK)
 		AssertJsonContentType(t, response)
 		AssertCookie(t, response.Result().Cookies(), userCookieName)
 	})
@@ -69,7 +69,7 @@ func TestGetRoom(t *testing.T) {
 		got := GetRoomFromResponse(t, response.Body)
 
 		AssertRoom(t, philippsRoom, got)
-		AssertStatus(t, response, http.StatusOK)
+		AssertStatus(t, response.Code, http.StatusOK)
 		AssertJsonContentType(t, response)
 		AssertCookie(t, response.Result().Cookies(), userCookieName)
 	})
@@ -80,7 +80,7 @@ func TestGetRoom(t *testing.T) {
 
 		server.ServeHTTP(response, request)
 
-		AssertStatus(t, response, http.StatusNotFound)
+		AssertStatus(t, response.Code, http.StatusNotFound)
 		AssertNoCookie(t, response.Result().Cookies(), userCookieName)
 	})
 }
@@ -99,18 +99,32 @@ func TestWebSocket(t *testing.T) {
 	pubSub := &MockPubSub{}
 	server := NewServer(store, pubSub)
 
-	t.Run("cannot establish websocket connection if room is missing", func(t *testing.T) {
+	requestHeader := make(http.Header)
+	requestHeader.Add("Cookie", NewUserCookie().String())
+
+	t.Run("fail if unauthorized", func(t *testing.T) {
+
+		wsServer := httptest.NewServer(server)
+		defer wsServer.Close()
+
+		wsURL := newWebSocketURL(wsServer.URL, "jerome")
+		_, response, err := websocket.DefaultDialer.Dial(wsURL, nil)
+
+		AssertError(t, websocket.ErrBadHandshake, err)
+		AssertStatus(t, response.StatusCode, http.StatusUnauthorized)
+	})
+
+	t.Run("fail if room is missing", func(t *testing.T) {
 
 		wsServer := httptest.NewServer(server)
 		defer wsServer.Close()
 
 		wsURL := newWebSocketURL(wsServer.URL, "philipp")
-		_, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
+		_, response, err := websocket.DefaultDialer.Dial(wsURL, requestHeader)
 
 		AssertError(t, websocket.ErrBadHandshake, err)
+		AssertStatus(t, response.StatusCode, http.StatusNotFound)
 	})
-
-	// TODO: check user cookie
 }
 
 func TestPostChat(t *testing.T) {
@@ -133,7 +147,7 @@ func TestPostChat(t *testing.T) {
 
 		server.ServeHTTP(response, request)
 
-		AssertStatus(t, response, http.StatusUnauthorized)
+		AssertStatus(t, response.Code, http.StatusUnauthorized)
 	})
 
 	t.Run("return 404 on missing rooms", func(t *testing.T) {
@@ -144,13 +158,17 @@ func TestPostChat(t *testing.T) {
 
 		server.ServeHTTP(response, request)
 
-		AssertStatus(t, response, http.StatusNotFound)
+		AssertStatus(t, response.Code, http.StatusNotFound)
 	})
 
 	t.Run("send and receive chat message", func(t *testing.T) {
 		wsServer := httptest.NewServer(server)
 		wsURL := newWebSocketURL(wsServer.URL, "jerome")
-		ws := MustDialWS(t, wsURL)
+
+		requestHeader := make(http.Header)
+		requestHeader.Add("Cookie", NewUserCookie().String())
+
+		ws := MustDialWS(t, wsURL, requestHeader)
 
 		defer wsServer.Close()
 		defer ws.Close()
@@ -164,7 +182,7 @@ func TestPostChat(t *testing.T) {
 
 		server.ServeHTTP(response, request)
 
-		AssertStatus(t, response, http.StatusCreated)
+		AssertStatus(t, response.Code, http.StatusCreated)
 		AssertJsonContentType(t, response)
 
 		chatMsgB, _ := json.Marshal(chatMsg)

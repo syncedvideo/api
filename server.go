@@ -103,6 +103,14 @@ var upgrader = websocket.Upgrader{
 }
 
 func (s *Server) webSocket(w http.ResponseWriter, r *http.Request) {
+
+	c, err := r.Cookie(userCookieName)
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	log.Println(c)
+
 	roomID := chi.URLParam(r, "id")
 	room := s.store.GetRoom(roomID)
 	if room.ID == "" {
