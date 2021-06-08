@@ -9,7 +9,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type PubSub interface {
+type EventManager interface {
 	Publish(roomID string, event Event)
 	Subscribe(roomID string) <-chan Event
 }
@@ -34,17 +34,17 @@ func NewEvent(eventType EventType, data []byte) Event {
 	}
 }
 
-type RedisPubSub struct {
+type RedisEventManager struct {
 	client *redis.Client
 }
 
-func NewRedisPubSub(client *redis.Client) *RedisPubSub {
-	pubSub := new(RedisPubSub)
-	pubSub.client = client
-	return pubSub
+func NewRedisEventManager(client *redis.Client) *RedisEventManager {
+	eventManager := new(RedisEventManager)
+	eventManager.client = client
+	return eventManager
 }
 
-func (r *RedisPubSub) Publish(roomID string, event Event) {
+func (r *RedisEventManager) Publish(roomID string, event Event) {
 	log.Printf("publish %v", event)
 
 	eventB, err := json.Marshal(event)
@@ -56,7 +56,7 @@ func (r *RedisPubSub) Publish(roomID string, event Event) {
 	r.client.Publish(context.Background(), roomID, eventB)
 }
 
-func (r *RedisPubSub) Subscribe(roomID string) <-chan Event {
+func (r *RedisEventManager) Subscribe(roomID string) <-chan Event {
 	pubSub := r.client.Subscribe(context.Background(), roomID)
 	ch := make(chan Event)
 

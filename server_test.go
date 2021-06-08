@@ -1,7 +1,6 @@
 package syncedvideo
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -96,8 +95,8 @@ func TestWebSocket(t *testing.T) {
 		},
 	}
 
-	pubSub := &MockPubSub{}
-	server := NewServer(store, pubSub)
+	eventManager := &MockEventManager{}
+	server := NewServer(store, eventManager)
 
 	requestHeader := make(http.Header)
 	requestHeader.Add("Cookie", NewUserCookie().String())
@@ -138,8 +137,8 @@ func TestPostChat(t *testing.T) {
 		},
 	}
 
-	pubSub := &MockPubSub{}
-	server := NewServer(store, pubSub)
+	eventManager := &MockEventManager{}
+	server := NewServer(store, eventManager)
 
 	t.Run("return 401 if unauthorized", func(t *testing.T) {
 		request := NewPostRoomChatRequest("jerome", ChatMessage{})
@@ -163,14 +162,13 @@ func TestPostChat(t *testing.T) {
 
 	t.Run("send and receive chat message", func(t *testing.T) {
 		wsServer := httptest.NewServer(server)
-		wsURL := newWebSocketURL(wsServer.URL, "jerome")
+		defer wsServer.Close()
 
+		wsURL := newWebSocketURL(wsServer.URL, "jerome")
 		requestHeader := make(http.Header)
 		requestHeader.Add("Cookie", NewUserCookie().String())
 
 		ws := MustDialWS(t, wsURL, requestHeader)
-
-		defer wsServer.Close()
 		defer ws.Close()
 
 		chatMsg := NewChatMessage("Tobi", "Steinreinigung läuft")
@@ -185,10 +183,8 @@ func TestPostChat(t *testing.T) {
 		AssertStatus(t, response.Code, http.StatusCreated)
 		AssertJsonContentType(t, response)
 
-		chatMsgB, _ := json.Marshal(chatMsg)
-		wantEvent := NewEvent(EventChat, chatMsgB)
 		Within(t, 10*time.Millisecond, func() {
-			AssertWebsocketGotEvent(t, ws, wantEvent)
+			AssertWebsocketGotEvent(t, ws, EventChat)
 		})
 	})
 }

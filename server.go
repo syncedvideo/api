@@ -19,7 +19,7 @@ type RoomStore interface {
 type Server struct {
 	store RoomStore
 	http.Handler
-	pubSub PubSub
+	eventManager EventManager
 }
 
 const (
@@ -27,10 +27,10 @@ const (
 	userCookieName  = "user"
 )
 
-func NewServer(store RoomStore, pubSub PubSub) *Server {
+func NewServer(store RoomStore, eventManager EventManager) *Server {
 	server := new(Server)
 	server.store = store
-	server.pubSub = pubSub
+	server.eventManager = eventManager
 
 	router := chi.NewMux()
 	router.Post("/rooms", server.postRoomHandler)
@@ -94,7 +94,7 @@ func (s *Server) postChatHandler(w http.ResponseWriter, r *http.Request) {
 	chatMsgBytes, _ := json.Marshal(chatMsg)
 
 	event := NewEvent(EventChat, chatMsgBytes)
-	go s.pubSub.Publish(room.ID, event)
+	go s.eventManager.Publish(room.ID, event)
 }
 
 var upgrader = websocket.Upgrader{
@@ -104,12 +104,11 @@ var upgrader = websocket.Upgrader{
 
 func (s *Server) webSocket(w http.ResponseWriter, r *http.Request) {
 
-	c, err := r.Cookie(userCookieName)
+	_, err := r.Cookie(userCookieName)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
-	log.Println(c)
 
 	roomID := chi.URLParam(r, "id")
 	room := s.store.GetRoom(roomID)
@@ -124,7 +123,7 @@ func (s *Server) webSocket(w http.ResponseWriter, r *http.Request) {
 	}
 	defer conn.Close()
 
-	ch := s.pubSub.Subscribe(roomID)
+	ch := s.eventManager.Subscribe(roomID)
 
 	for event := range ch {
 		log.Printf("received event: %v\n", event)

@@ -108,8 +108,7 @@ func AssertJsonContentType(t testing.TB, r *httptest.ResponseRecorder) {
 func AssertRoom(t testing.TB, want, got Room) {
 	t.Helper()
 	if want.Name != got.Name {
-		t.Errorf("wrong room: got %s, want %s", got, want)
-
+		t.Errorf("wrong room: got %v, want %v", got, want)
 	}
 }
 
@@ -133,15 +132,15 @@ func GetRoomFromResponse(t testing.TB, body io.Reader) Room {
 	return room
 }
 
-type MockPubSub struct {
+type MockEventManager struct {
 	ch chan Event
 }
 
-func (m *MockPubSub) Publish(roomID string, event Event) {
+func (m *MockEventManager) Publish(roomID string, event Event) {
 	m.ch <- event
 }
 
-func (m *MockPubSub) Subscribe(roomID string) <-chan Event {
+func (m *MockEventManager) Subscribe(roomID string) <-chan Event {
 	ch := make(chan Event)
 	m.ch = ch
 	return ch
@@ -181,7 +180,7 @@ func MustWriteWSMessage(t testing.TB, conn *websocket.Conn, msg []byte) {
 	}
 }
 
-func AssertWebsocketGotEvent(t testing.TB, ws *websocket.Conn, want Event) {
+func AssertWebsocketGotEvent(t testing.TB, ws *websocket.Conn, want EventType) {
 	t.Helper()
 
 	_, msg, err := ws.ReadMessage()
@@ -195,41 +194,21 @@ func AssertWebsocketGotEvent(t testing.TB, ws *websocket.Conn, want Event) {
 		t.Fatal(err)
 	}
 
-	resetEventIDFields(t, &got)
-	resetEventIDFields(t, &want)
-
-	if !reflect.DeepEqual(got, want) {
-		t.Errorf("got %q, want %q", got, want)
+	if got.T != want {
+		t.Errorf("wrong event: got %q, want %q", got.T, want)
 	}
-}
-
-func resetEventIDFields(t testing.TB, event *Event) {
-	t.Helper()
-
-	event.ID = ""
-
-	data := make(map[string]interface{})
-	err := json.Unmarshal(event.D, &data)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	_, ok := data["id"]
-	if ok {
-		data["id"] = ""
-	}
-
-	dataB, err := json.Marshal(data)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	event.D = dataB
 }
 
 func AssertCreateRoomCalls(t testing.TB, got []string, want int) {
 	t.Helper()
 	if len(got) != want {
 		t.Errorf("wrong create room calls: got %d, want %d", len(got), want)
+	}
+}
+
+func AssertVideo(t testing.TB, want, got *Video) {
+	t.Helper()
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("wrong video: got %v, want %v", got, want)
 	}
 }
