@@ -127,17 +127,28 @@ func AssertError(t testing.TB, want, got error) {
 }
 
 func GetRoomFromResponse(t testing.TB, body io.Reader) Room {
-	room, err := NewRoom(body)
+	room := Room{}
+	err := json.NewDecoder(body).Decode(&room)
 	AssertNoError(t, err)
 	return room
 }
 
+func NewMockEventManager() *MockEventManager {
+	return &MockEventManager{
+		ch: make(chan Event),
+	}
+}
+
 type MockEventManager struct {
-	ch chan Event
+	ch     chan Event
+	Events []Event
 }
 
 func (m *MockEventManager) Publish(roomID string, event Event) {
-	m.ch <- event
+	go func() {
+		m.ch <- event
+	}()
+	m.Events = append(m.Events, event)
 }
 
 func (m *MockEventManager) Subscribe(roomID string) <-chan Event {
@@ -210,5 +221,23 @@ func AssertVideo(t testing.TB, want, got *Video) {
 	t.Helper()
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("wrong video: got %v, want %v", got, want)
+	}
+}
+
+func AssertEventType(t testing.TB, want EventType, got Event) {
+	t.Helper()
+	if got.T.String() != want.String() {
+		t.Errorf("wrong event type: got %s, want %s", got.T, want)
+	}
+}
+
+func AssertEventData(t testing.TB, want interface{}, got Event) {
+	t.Helper()
+
+	wantB, _ := json.Marshal(want)
+	gotB, _ := json.Marshal(got.D)
+
+	if string(gotB) != string(wantB) {
+		t.Errorf("wrong event data: got %q, want %q", got, want)
 	}
 }

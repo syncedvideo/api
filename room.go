@@ -2,17 +2,16 @@ package syncedvideo
 
 import (
 	"encoding/json"
-	"fmt"
-	"io"
 
 	"github.com/google/uuid"
 )
 
 type Room struct {
-	ID       string   `json:"id"`
-	Name     string   `json:"name"`
-	Video    *Video   `json:"video"`
-	Playlist []*Video `json:"playlist"`
+	ID           string   `json:"id"`
+	Name         string   `json:"name"`
+	Video        *Video   `json:"video"`
+	Playlist     []*Video `json:"playlist"`
+	eventManager EventManager
 }
 
 type Video struct {
@@ -20,20 +19,22 @@ type Video struct {
 	Name string `json:"name"`
 }
 
-func NewRoom(reader io.Reader) (Room, error) {
-	room := Room{}
-	err := json.NewDecoder(reader).Decode(&room)
-	if err != nil {
-		return room, fmt.Errorf("error decoding room: %v", err)
+func NewRoom(eventManager EventManager) Room {
+	return Room{
+		ID:           uuid.NewString(),
+		eventManager: eventManager,
 	}
-	room.ID = uuid.NewString()
-	return room, nil
 }
 
-func (r *Room) AddVideo(video *Video) {
-	if r.Video == nil {
-		r.Video = video
-		return
-	}
-	r.Playlist = append(r.Playlist, video)
+func (r *Room) PlayVideo(video *Video) {
+	r.Video = video
+	videoB, _ := json.Marshal(video)
+	event := NewEvent(EventPlayVideo, videoB)
+	r.eventManager.Publish(r.ID, event)
+}
+
+func (r *Room) SendChatMessage(chatMessage ChatMessage) {
+	chatMessageB, _ := json.Marshal(&chatMessage)
+	event := NewEvent(EventChat, chatMessageB)
+	r.eventManager.Publish(r.ID, event)
 }

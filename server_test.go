@@ -95,7 +95,7 @@ func TestWebSocket(t *testing.T) {
 		},
 	}
 
-	eventManager := &MockEventManager{}
+	eventManager := NewMockEventManager()
 	server := NewServer(store, eventManager)
 
 	requestHeader := make(http.Header)
@@ -137,7 +137,7 @@ func TestPostChat(t *testing.T) {
 		},
 	}
 
-	eventManager := &MockEventManager{}
+	eventManager := NewMockEventManager()
 	server := NewServer(store, eventManager)
 
 	t.Run("return 401 if unauthorized", func(t *testing.T) {
@@ -160,7 +160,7 @@ func TestPostChat(t *testing.T) {
 		AssertStatus(t, response.Code, http.StatusNotFound)
 	})
 
-	t.Run("send and receive chat message", func(t *testing.T) {
+	t.Run("receive chat message via websocket", func(t *testing.T) {
 		wsServer := httptest.NewServer(server)
 		defer wsServer.Close()
 

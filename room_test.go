@@ -4,18 +4,33 @@ import (
 	"testing"
 )
 
-func TestVideoPlayer(t *testing.T) {
+func TestRoom(t *testing.T) {
 
-	t.Run("add videos", func(t *testing.T) {
+	t.Run("play video", func(t *testing.T) {
 
-		room := Room{ID: "test", Name: "Test room"}
-		video1 := &Video{ID: "video1", Name: "Test video 1"}
-		video2 := &Video{ID: "video2", Name: "Test video 2"}
+		eventManager := NewMockEventManager()
+		room := NewRoom(eventManager)
 
-		room.AddVideo(video1)
-		room.AddVideo(video2)
+		video := &Video{ID: "test", Name: "Test video"}
+		room.PlayVideo(video)
 
-		AssertVideo(t, video1, room.Video)
-		AssertVideo(t, video2, room.Playlist[0])
+		got := eventManager.Events[0]
+
+		AssertEventType(t, EventPlayVideo, got)
+		AssertEventData(t, video, got)
+	})
+
+	t.Run("send chat messsage", func(t *testing.T) {
+
+		eventManager := NewMockEventManager()
+		room := NewRoom(eventManager)
+
+		chatMessage := NewChatMessage("Jerome", "Steinreinigung läuft")
+		room.SendChatMessage(chatMessage)
+
+		got := eventManager.Events[0]
+
+		AssertEventType(t, EventChat, got)
+		AssertEventData(t, chatMessage, got)
 	})
 }

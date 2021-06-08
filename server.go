@@ -42,8 +42,16 @@ func NewServer(store RoomStore, eventManager EventManager) *Server {
 	return server
 }
 
+type postRoomData struct {
+	Name string `json:"name"`
+}
+
 func (s *Server) postRoomHandler(w http.ResponseWriter, r *http.Request) {
-	room, _ := NewRoom(r.Body)
+	postData := postRoomData{}
+	json.NewDecoder(r.Body).Decode(&postData)
+
+	room := NewRoom(nil)
+	room.Name = postData.Name
 	s.store.CreateRoom(&room)
 
 	http.SetCookie(w, NewUserCookie())
@@ -78,6 +86,7 @@ func (s *Server) postChatHandler(w http.ResponseWriter, r *http.Request) {
 
 	roomID := chi.URLParam(r, "id")
 	room := s.store.GetRoom(roomID)
+	room.eventManager = s.eventManager
 
 	if room.ID == "" {
 		w.WriteHeader(http.StatusNotFound)
@@ -89,12 +98,9 @@ func (s *Server) postChatHandler(w http.ResponseWriter, r *http.Request) {
 
 	bodyData := ChatMessage{}
 	json.NewDecoder(r.Body).Decode(&bodyData)
-	chatMsg := NewChatMessage(bodyData.Author, bodyData.Message)
+	chatMessage := NewChatMessage(bodyData.Author, bodyData.Message)
 
-	chatMsgBytes, _ := json.Marshal(chatMsg)
-
-	event := NewEvent(EventChat, chatMsgBytes)
-	go s.eventManager.Publish(room.ID, event)
+	go room.SendChatMessage(chatMessage)
 }
 
 var upgrader = websocket.Upgrader{
