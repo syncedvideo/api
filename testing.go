@@ -217,13 +217,6 @@ func AssertCreateRoomCalls(t testing.TB, got []string, want int) {
 	}
 }
 
-func AssertVideo(t testing.TB, want, got *Video) {
-	t.Helper()
-	if !reflect.DeepEqual(got, want) {
-		t.Errorf("wrong video: got %v, want %v", got, want)
-	}
-}
-
 func AssertEventType(t testing.TB, want EventType, got Event) {
 	t.Helper()
 	if got.T.String() != want.String() {
@@ -239,5 +232,23 @@ func AssertEventData(t testing.TB, want interface{}, got Event) {
 
 	if string(gotB) != string(wantB) {
 		t.Errorf("wrong event data: got %q, want %q", got, want)
+	}
+}
+
+func AssertVideoPlayerIsPlaying(t testing.TB, room Room) {
+	t.Helper()
+	if !room.VideoPlayer.Playing() {
+		t.Error("video player is not playing")
+	}
+
+	// if videoPlayer.StartedAt.Before(videoPlayer.PausedAt) {
+	// 	t.Error("video player is not playing")
+	// }
+}
+
+func AssertVideoPlayerIsPaused(t testing.TB, room Room) {
+	t.Helper()
+	if room.VideoPlayer.Playing() {
+		t.Error("video player is not paused")
 	}
 }

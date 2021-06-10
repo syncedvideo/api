@@ -6,7 +6,6 @@ import (
 	"log"
 
 	"github.com/go-redis/redis/v8"
-	"github.com/google/uuid"
 )
 
 type EventManager interface {
@@ -15,9 +14,8 @@ type EventManager interface {
 }
 
 type Event struct {
-	ID string          `json:"id"`
-	T  EventType       `json:"t"`
-	D  json.RawMessage `json:"d"`
+	T EventType       `json:"t"`
+	D json.RawMessage `json:"d"`
 }
 
 type EventType string
@@ -27,15 +25,15 @@ func (e EventType) String() string {
 }
 
 var (
-	EventChat      EventType = "chat"
-	EventPlayVideo EventType = "playvideo"
+	EventChat EventType = "chat"
+	EventPlay EventType = "play"
 )
 
-func NewEvent(eventType EventType, data []byte) Event {
+func NewEvent(eventType EventType, data interface{}) Event {
+	dataB, _ := json.Marshal(data)
 	return Event{
-		ID: uuid.NewString(),
-		T:  eventType,
-		D:  data,
+		T: eventType,
+		D: dataB,
 	}
 }
 

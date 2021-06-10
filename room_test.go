@@ -10,14 +10,32 @@ func TestRoom(t *testing.T) {
 
 		eventManager := NewMockEventManager()
 		room := NewRoom(eventManager)
+		video := &Video{
+			ID:         "test",
+			Provider:   "youtube",
+			ProviderID: "yt-test",
+			Title:      "Test video",
+		}
 
-		video := &Video{ID: "test", Name: "Test video"}
-		room.PlayVideo(video)
+		room.Play(video)
 
-		got := eventManager.Events[0]
+		gotEvent := eventManager.Events[0]
 
-		AssertEventType(t, EventPlayVideo, got)
-		AssertEventData(t, video, got)
+		AssertVideoPlayerIsPlaying(t, room)
+		AssertEventType(t, EventPlay, gotEvent)
+		AssertEventData(t, video, gotEvent)
+	})
+
+	t.Run("pause video", func(t *testing.T) {
+		//
+	})
+
+	t.Run("seek video", func(t *testing.T) {
+		//
+	})
+
+	t.Run("skip video", func(t *testing.T) {
+		//
 	})
 
 	t.Run("send chat messsage", func(t *testing.T) {

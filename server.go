@@ -100,7 +100,7 @@ func (s *Server) postChatHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewDecoder(r.Body).Decode(&bodyData)
 	chatMessage := NewChatMessage(bodyData.Author, bodyData.Message)
 
-	go room.SendChatMessage(chatMessage)
+	room.SendChatMessage(chatMessage)
 }
 
 var upgrader = websocket.Upgrader{
