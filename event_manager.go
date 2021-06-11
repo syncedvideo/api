@@ -25,8 +25,9 @@ func (e EventType) String() string {
 }
 
 var (
-	EventChat EventType = "chat"
-	EventPlay EventType = "play"
+	EventChat  EventType = "chat"
+	EventPlay  EventType = "play"
+	EventPause EventType = "pause"
 )
 
 func NewEvent(eventType EventType, data interface{}) Event {

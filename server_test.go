@@ -25,7 +25,7 @@ func TestPostRoom(t *testing.T) {
 		server.ServeHTTP(response, request)
 
 		gotRoom := GetRoomFromResponse(t, response.Body)
-		AssertRoom(t, wantRoom, gotRoom)
+		AssertRoom(t, gotRoom, wantRoom)
 		AssertCreateRoomCalls(t, store.CreateRoomCalls, 1)
 		AssertStatus(t, response.Code, http.StatusCreated)
 		AssertJsonContentType(t, response)
@@ -53,7 +53,7 @@ func TestGetRoom(t *testing.T) {
 
 		got := GetRoomFromResponse(t, response.Body)
 
-		AssertRoom(t, jeromesRoom, got)
+		AssertRoom(t, got, jeromesRoom)
 		AssertStatus(t, response.Code, http.StatusOK)
 		AssertJsonContentType(t, response)
 		AssertCookie(t, response.Result().Cookies(), userCookieName)
@@ -67,7 +67,7 @@ func TestGetRoom(t *testing.T) {
 
 		got := GetRoomFromResponse(t, response.Body)
 
-		AssertRoom(t, philippsRoom, got)
+		AssertRoom(t, got, philippsRoom)
 		AssertStatus(t, response.Code, http.StatusOK)
 		AssertJsonContentType(t, response)
 		AssertCookie(t, response.Result().Cookies(), userCookieName)
@@ -109,7 +109,7 @@ func TestWebSocket(t *testing.T) {
 		wsURL := newWebSocketURL(wsServer.URL, "jerome")
 		_, response, err := websocket.DefaultDialer.Dial(wsURL, nil)
 
-		AssertError(t, websocket.ErrBadHandshake, err)
+		AssertError(t, err, websocket.ErrBadHandshake)
 		AssertStatus(t, response.StatusCode, http.StatusUnauthorized)
 	})
 
@@ -121,7 +121,7 @@ func TestWebSocket(t *testing.T) {
 		wsURL := newWebSocketURL(wsServer.URL, "philipp")
 		_, response, err := websocket.DefaultDialer.Dial(wsURL, requestHeader)
 
-		AssertError(t, websocket.ErrBadHandshake, err)
+		AssertError(t, err, websocket.ErrBadHandshake)
 		AssertStatus(t, response.StatusCode, http.StatusNotFound)
 	})
 }

@@ -105,7 +105,7 @@ func AssertJsonContentType(t testing.TB, r *httptest.ResponseRecorder) {
 	}
 }
 
-func AssertRoom(t testing.TB, want, got Room) {
+func AssertRoom(t testing.TB, got, want Room) {
 	t.Helper()
 	if want.Name != got.Name {
 		t.Errorf("wrong room: got %v, want %v", got, want)
@@ -119,7 +119,7 @@ func AssertNoError(t testing.TB, err error) {
 	}
 }
 
-func AssertError(t testing.TB, want, got error) {
+func AssertError(t testing.TB, got, want error) {
 	t.Helper()
 	if want != got {
 		t.Fatalf("wrong error: got %s, want %s", got, want)
@@ -217,38 +217,21 @@ func AssertCreateRoomCalls(t testing.TB, got []string, want int) {
 	}
 }
 
-func AssertEventType(t testing.TB, want EventType, got Event) {
+func AssertEventType(t testing.TB, event Event, want EventType) {
 	t.Helper()
-	if got.T.String() != want.String() {
-		t.Errorf("wrong event type: got %s, want %s", got.T, want)
+	got := event.T.String()
+	if got != want.String() {
+		t.Errorf(`wrong event type: got "%s", want "%s"`, got, want)
 	}
 }
 
-func AssertEventData(t testing.TB, want interface{}, got Event) {
+func AssertEventData(t testing.TB, event Event, want interface{}) {
 	t.Helper()
 
+	gotB, _ := json.Marshal(event.D)
 	wantB, _ := json.Marshal(want)
-	gotB, _ := json.Marshal(got.D)
 
 	if string(gotB) != string(wantB) {
-		t.Errorf("wrong event data: got %q, want %q", got, want)
-	}
-}
-
-func AssertVideoPlayerIsPlaying(t testing.TB, room Room) {
-	t.Helper()
-	if !room.VideoPlayer.Playing() {
-		t.Error("video player is not playing")
-	}
-
-	// if videoPlayer.StartedAt.Before(videoPlayer.PausedAt) {
-	// 	t.Error("video player is not playing")
-	// }
-}
-
-func AssertVideoPlayerIsPaused(t testing.TB, room Room) {
-	t.Helper()
-	if room.VideoPlayer.Playing() {
-		t.Error("video player is not paused")
+		t.Errorf("wrong event data: got %q, want %q", event.D, want)
 	}
 }
